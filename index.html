@@ -144,17 +144,19 @@
       overscroll-behavior-y: contain;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
-      padding-top: 88px !important;
-      padding-bottom: 88px !important;
+      padding-top: 84px !important;
+      padding-bottom: 84px !important;
+      box-sizing: border-box !important;
     }
     .wheel-scroll-item {
       scroll-snap-align: center;
       scroll-snap-stop: always;
-      height: 44px !important;
-      line-height: 44px !important;
+      height: 42px !important;
+      line-height: 42px !important;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-sizing: border-box !important;
     }
   </style>
 </head>
@@ -1662,26 +1664,26 @@
         </div>
       </div>
 
-      <!-- 3D Wheel Roller Container -->
-      <div class="relative py-2">
-        <!-- Lens highlight -->
-        <div class="absolute inset-x-2 top-1/2 -translate-y-1/2 h-[44px] bg-white/10 border-y border-white/25 rounded-xl pointer-events-none z-10 shadow-sm"></div>
+      <!-- Column Labels (Placed outside scroller so they do not shift the vertical center) -->
+      <div class="grid grid-cols-2 gap-3 text-center pt-1">
+        <span class="text-[10px] font-bold text-ios-gray uppercase tracking-wider">Hour (00–23)</span>
+        <span class="text-[10px] font-bold text-ios-teal uppercase tracking-wider">Minute (:00–:55)</span>
+      </div>
 
-        <div class="grid grid-cols-2 gap-3 text-center text-base font-bold text-white relative z-0">
+      <!-- 3D Wheel Roller Container with Exact Center Lens -->
+      <div class="relative h-[210px] rounded-2xl bg-black/50 border border-white/5 overflow-hidden">
+        <!-- Exact Center Highlight Bubble / Lens (height: 42px, top: 84px = (210 - 42) / 2) -->
+        <div class="absolute inset-x-2 top-[84px] h-[42px] bg-white/15 border border-white/30 rounded-xl pointer-events-none z-10 shadow-sm"></div>
+
+        <div class="grid grid-cols-2 gap-3 h-full relative z-0">
           <!-- Hours Column -->
-          <div class="space-y-1">
-            <span class="text-[10px] font-bold text-ios-gray uppercase block pb-1">Hour (00–23)</span>
-            <div id="wheelScrollHours" class="h-[220px] overflow-y-auto ios-scroll wheel-scroll-col space-y-0" onscroll="handleWheelColumnScroll('hour')">
-              <!-- Populated 00 - 23 -->
-            </div>
+          <div id="wheelScrollHours" class="h-[210px] overflow-y-auto ios-scroll wheel-scroll-col space-y-0 text-center" onscroll="handleWheelColumnScroll('hour')">
+            <!-- Populated 00 - 23 -->
           </div>
 
           <!-- Minutes Column (5-Min Interval) -->
-          <div class="space-y-1">
-            <span class="text-[10px] font-bold text-ios-teal uppercase block pb-1">Minute (:00–:55)</span>
-            <div id="wheelScrollMinutes" class="h-[220px] overflow-y-auto ios-scroll wheel-scroll-col space-y-0" onscroll="handleWheelColumnScroll('minute')">
-              <!-- Populated 00, 05, 10, 15... 55 -->
-            </div>
+          <div id="wheelScrollMinutes" class="h-[210px] overflow-y-auto ios-scroll wheel-scroll-col space-y-0 text-center" onscroll="handleWheelColumnScroll('minute')">
+            <!-- Populated 00, 05, 10, 15... 55 -->
           </div>
         </div>
       </div>
@@ -2047,28 +2049,35 @@
       for (let h = 0; h < 24; h++) {
         const val = String(h).padStart(2, "0");
         const div = document.createElement("div");
-        div.className = "wheel-scroll-item text-base font-semibold cursor-pointer select-none text-gray-400 hover:text-white transition";
+        div.className = "wheel-scroll-item text-sm font-semibold cursor-pointer select-none text-gray-500 hover:text-gray-300 transition-all";
         div.setAttribute("data-val", val);
+        div.setAttribute("data-index", h);
         div.innerText = val;
         div.onclick = () => scrollToWheelItem(hoursCol, div, val, 'hour');
         hoursCol.appendChild(div);
       }
 
       minsCol.innerHTML = "";
+      let mIdx = 0;
       for (let m = 0; m < 60; m += 5) {
         const val = String(m).padStart(2, "0");
         const div = document.createElement("div");
-        div.className = "wheel-scroll-item text-base font-semibold cursor-pointer select-none text-gray-400 hover:text-ios-teal transition";
+        div.className = "wheel-scroll-item text-sm font-semibold cursor-pointer select-none text-gray-500 hover:text-ios-teal transition-all";
         div.setAttribute("data-val", val);
+        div.setAttribute("data-index", mIdx);
         div.innerText = `:${val}`;
         div.onclick = () => scrollToWheelItem(minsCol, div, val, 'minute');
         minsCol.appendChild(div);
+        mIdx++;
       }
     }
 
     function scrollToWheelItem(container, element, val, type) {
       if (!element || !container) return;
-      const targetScrollTop = element.offsetTop - 88;
+      const idx = parseInt(element.getAttribute("data-index") || "0", 10);
+      // Item height is 42px; top spacer is 84px.
+      // Therefore, the i-th item is perfectly centered when container.scrollTop = i * 42.
+      const targetScrollTop = idx * 42;
       container.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
 
       if (type === 'hour') {
@@ -2082,9 +2091,9 @@
       selectedWheelHour = val;
       document.querySelectorAll("#wheelScrollHours .wheel-scroll-item").forEach(item => {
         if (item.getAttribute("data-val") === val) {
-          item.className = "wheel-scroll-item text-lg font-black select-none text-white transition scale-110";
+          item.className = "wheel-scroll-item text-lg font-black select-none text-white transition-all scale-105";
         } else {
-          item.className = "wheel-scroll-item text-sm font-semibold select-none text-gray-500 hover:text-gray-300 transition";
+          item.className = "wheel-scroll-item text-sm font-medium select-none text-gray-500 hover:text-gray-300 transition-all";
         }
       });
     }
@@ -2093,9 +2102,9 @@
       selectedWheelMinute = val;
       document.querySelectorAll("#wheelScrollMinutes .wheel-scroll-item").forEach(item => {
         if (item.getAttribute("data-val") === val) {
-          item.className = "wheel-scroll-item text-lg font-black select-none text-ios-teal transition scale-110";
+          item.className = "wheel-scroll-item text-lg font-black select-none text-ios-teal transition-all scale-105";
         } else {
-          item.className = "wheel-scroll-item text-sm font-semibold select-none text-gray-500 hover:text-gray-300 transition";
+          item.className = "wheel-scroll-item text-sm font-medium select-none text-gray-500 hover:text-gray-300 transition-all";
         }
       });
     }
@@ -2107,20 +2116,12 @@
         const container = document.getElementById(colId);
         if (!container) return;
 
-        // Container is 220px high, center is at scrollTop + 110px
-        const centerPos = container.scrollTop + 110;
+        // With item height = 42px and top padding = 84px,
+        // the index centered in the 84px window is Math.round(container.scrollTop / 42)
+        const activeIdx = Math.max(0, Math.round(container.scrollTop / 42));
         const items = container.querySelectorAll(".wheel-scroll-item");
-        let closestItem = null;
-        let minDiff = Infinity;
-
-        items.forEach(item => {
-          const itemCenter = item.offsetTop + (item.offsetHeight / 2);
-          const diff = Math.abs(itemCenter - centerPos);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closestItem = item;
-          }
-        });
+        const safeIdx = Math.min(activeIdx, items.length - 1);
+        const closestItem = items[safeIdx];
 
         if (closestItem) {
           const val = closestItem.getAttribute("data-val");
@@ -2130,7 +2131,7 @@
             highlightWheelMinute(val);
           }
         }
-      }, 50);
+      }, 60);
     }
 
     function openIosWheelTimePicker(targetInputId, isDateTime = false) {
