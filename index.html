@@ -108,11 +108,25 @@
     input[type="datetime-local"] {
       width: 100% !important;
       min-width: 0 !important;
-      display: block !important;
+      display: flex !important;
+      align-items: center !important;
       box-sizing: border-box !important;
+      line-height: normal !important;
       -webkit-appearance: none;
       appearance: none;
       background-clip: padding-box;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+    input[type="date"]::-webkit-date-and-time-value,
+    input[type="time"]::-webkit-date-and-time-value,
+    input[type="datetime-local"]::-webkit-date-and-time-value {
+      text-align: left;
+      margin: 0 !important;
+      line-height: 48px !important;
+      height: 48px !important;
+      display: flex !important;
+      align-items: center !important;
     }
     input[type="date"]::-webkit-calendar-picker-indicator,
     input[type="time"]::-webkit-calendar-picker-indicator,
@@ -121,18 +135,21 @@
       cursor: pointer;
       opacity: 0.8;
       padding: 4px;
+      margin: auto 0;
     }
 
     /* iOS 3D Wheel Picker Roller */
     .wheel-scroll-col {
       scroll-snap-type: y mandatory;
       overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
     }
     .wheel-scroll-item {
       scroll-snap-align: center;
       scroll-snap-stop: always;
-      height: 40px;
-      line-height: 40px;
+      height: 44px;
+      line-height: 44px;
     }
   </style>
 </head>
@@ -262,17 +279,10 @@
       <div class="p-4 rounded-2xl bg-ios-surface border border-white/5 space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold text-ios-gray uppercase tracking-wider">Traveler Balances</h3>
-          <span class="text-[11px] text-ios-teal font-medium cursor-pointer" onclick="switchTripSubTab('budget')">Details & Debt Settler →</span>
+          <span class="text-[11px] text-ios-teal font-medium cursor-pointer" onclick="switchTripSubTab('budget')">Adjust Targets & Split →</span>
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="p-3 rounded-xl bg-ios-surfaceHigh border border-white/5 space-y-1">
-            <span class="text-[11px] text-ios-gray font-medium">Dean's Payments</span>
-            <p id="overviewDeanPaid" class="text-base font-black text-white">$0</p>
-          </div>
-          <div class="p-3 rounded-xl bg-ios-surfaceHigh border border-white/5 space-y-1">
-            <span class="text-[11px] text-ios-gray font-medium">Hannah's Payments</span>
-            <p id="overviewHannahPaid" class="text-base font-black text-white">$0</p>
-          </div>
+        <div id="overviewTravelersBalances" class="grid grid-cols-2 gap-3">
+          <!-- Dynamically populated per traveler -->
         </div>
         <p id="overviewSplitSummary" class="text-xs text-ios-gray italic text-center pt-1"></p>
       </div>
@@ -474,7 +484,7 @@
       <div class="flex items-center justify-between px-1">
         <div>
           <h2 class="text-xl font-bold text-white tracking-tight">Trip Budget & Splitter</h2>
-          <p class="text-xs text-ios-gray font-medium">Automatic 50/50 rebalancing between Dean & Hannah</p>
+          <p class="text-xs text-ios-gray font-medium">Custom percentage budget targets & rebalancing</p>
         </div>
         <button onclick="openBottomSheet('sheetAddExpense')" class="h-9 px-3.5 rounded-full bg-ios-green text-black text-xs font-bold flex items-center space-x-1 active:scale-95 transition">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -510,9 +520,28 @@
         </div>
       </div>
 
-      <!-- Debt Settlement Card -->
+      <!-- Target % Share Per Person Allocation Card -->
       <div class="p-5 rounded-3xl bg-ios-surface border border-white/10 space-y-3">
-        <h3 class="text-xs font-bold text-ios-gray uppercase tracking-wider">Settlement Formula (50/50 Split)</h3>
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xs font-bold text-ios-gray uppercase tracking-wider">Budget Share Targets (%)</h3>
+            <p class="text-[11px] text-gray-400">Set who covers what % of the trip costs</p>
+          </div>
+          <!-- Quick presets -->
+          <div class="flex items-center space-x-1.5">
+            <button type="button" onclick="setBudgetEqualSplitPreset()" class="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-[10px] font-bold text-white transition">Equal</button>
+            <button type="button" onclick="setBudgetSoloPreset(0)" class="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-[10px] font-bold text-ios-teal transition" id="btnSoloPreset0">Dean 100%</button>
+          </div>
+        </div>
+
+        <div id="travelerPercentSlidersContainer" class="space-y-3 pt-1">
+          <!-- Dynamically populated companion sliders -->
+        </div>
+      </div>
+
+      <!-- Debt Settlement Card with Custom % Target -->
+      <div class="p-5 rounded-3xl bg-ios-surface border border-white/10 space-y-3">
+        <h3 class="text-xs font-bold text-ios-gray uppercase tracking-wider">Target Settlement Breakdown</h3>
         <div id="settlementBox" class="p-4 rounded-2xl bg-ios-surfaceHigh border border-white/5 space-y-2">
           <!-- Populated by JS -->
         </div>
@@ -1631,21 +1660,21 @@
       <!-- 3D Wheel Roller Container -->
       <div class="relative py-3">
         <!-- Lens highlight -->
-        <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-white/10 border-y border-white/20 rounded-xl pointer-events-none z-10"></div>
+        <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-11 bg-white/10 border-y border-white/20 rounded-xl pointer-events-none z-10 shadow-sm"></div>
 
-        <div class="grid grid-cols-2 gap-2 text-center text-base font-bold text-white relative z-0">
+        <div class="grid grid-cols-2 gap-3 text-center text-base font-bold text-white relative z-0">
           <!-- Hours Column -->
           <div class="space-y-1">
-            <span class="text-[10px] font-bold text-ios-gray uppercase block pb-1">Hour</span>
-            <div id="wheelScrollHours" class="h-40 overflow-y-auto ios-scroll wheel-scroll-col py-16 space-y-1">
+            <span class="text-[10px] font-bold text-ios-gray uppercase block pb-1">Hour (00–23)</span>
+            <div id="wheelScrollHours" class="h-44 overflow-y-auto ios-scroll wheel-scroll-col py-16 space-y-0.5" onscroll="handleWheelColumnScroll('hour')">
               <!-- Populated 00 - 23 -->
             </div>
           </div>
 
           <!-- Minutes Column (5-Min Interval) -->
           <div class="space-y-1">
-            <span class="text-[10px] font-bold text-ios-teal uppercase block pb-1">Minute (5m)</span>
-            <div id="wheelScrollMinutes" class="h-40 overflow-y-auto ios-scroll wheel-scroll-col py-16 space-y-1">
+            <span class="text-[10px] font-bold text-ios-teal uppercase block pb-1">Minute (:00–:55)</span>
+            <div id="wheelScrollMinutes" class="h-44 overflow-y-auto ios-scroll wheel-scroll-col py-16 space-y-0.5" onscroll="handleWheelColumnScroll('minute')">
               <!-- Populated 00, 05, 10, 15... 55 -->
             </div>
           </div>
@@ -1691,6 +1720,7 @@
           budgetCap: 9500,
           inviteCode: "MEX-74X",
           companions: ["Dean", "Hannah"],
+          budgetShares: { "Dean": 50, "Hannah": 50 },
           flights: [
             {
               id: "f1",
@@ -1937,12 +1967,27 @@
     let activeWheelIsDateTime = false;
     let selectedWheelHour = "09";
     let selectedWheelMinute = "00";
+    let wheelScrollTimeout = null;
 
     // ==================== STATE MANAGEMENT ====================
     function loadInitialState() {
       try {
         const raw = localStorage.getItem(APP_STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          // Migrate budgetShares for existing trips if missing
+          parsed.trips.forEach(t => {
+            if (!t.budgetShares || Object.keys(t.budgetShares).length === 0) {
+              const comps = t.companions && t.companions.length > 0 ? t.companions : ["Dean", "Hannah"];
+              const equalShare = Math.round(100 / comps.length);
+              t.budgetShares = {};
+              comps.forEach((c, idx) => {
+                t.budgetShares[c] = idx === 0 ? 100 - equalShare * (comps.length - 1) : equalShare;
+              });
+            }
+          });
+          return parsed;
+        }
       } catch (err) {
         console.warn("Storage load fallback:", err);
       }
@@ -1997,9 +2042,10 @@
       for (let h = 0; h < 24; h++) {
         const val = String(h).padStart(2, "0");
         const div = document.createElement("div");
-        div.className = "wheel-scroll-item text-sm cursor-pointer select-none text-gray-400 hover:text-white transition";
+        div.className = "wheel-scroll-item text-base font-semibold cursor-pointer select-none text-gray-400 hover:text-white transition";
+        div.setAttribute("data-val", val);
         div.innerText = val;
-        div.onclick = () => selectWheelHour(val, div);
+        div.onclick = () => scrollToWheelItem(hoursCol, div, val, 'hour');
         hoursCol.appendChild(div);
       }
 
@@ -2007,35 +2053,78 @@
       for (let m = 0; m < 60; m += 5) {
         const val = String(m).padStart(2, "0");
         const div = document.createElement("div");
-        div.className = "wheel-scroll-item text-sm cursor-pointer select-none text-gray-400 hover:text-ios-teal transition";
+        div.className = "wheel-scroll-item text-base font-semibold cursor-pointer select-none text-gray-400 hover:text-ios-teal transition";
+        div.setAttribute("data-val", val);
         div.innerText = `:${val}`;
-        div.onclick = () => selectWheelMinute(val, div);
+        div.onclick = () => scrollToWheelItem(minsCol, div, val, 'minute');
         minsCol.appendChild(div);
       }
     }
 
-    function selectWheelHour(val, el) {
-      selectedWheelHour = val;
-      document.querySelectorAll("#wheelScrollHours .wheel-scroll-item").forEach(item => {
-        item.classList.remove("text-white", "font-black", "text-base");
-        item.classList.add("text-gray-400");
-      });
-      if (el) {
-        el.classList.add("text-white", "font-black", "text-base");
-        el.classList.remove("text-gray-400");
+    function scrollToWheelItem(container, element, val, type) {
+      if (!element || !container) return;
+      const topOffset = element.offsetTop - (container.clientHeight / 2) + (element.clientHeight / 2);
+      container.scrollTo({ top: topOffset, behavior: 'smooth' });
+
+      if (type === 'hour') {
+        highlightWheelHour(val);
+      } else {
+        highlightWheelMinute(val);
       }
     }
 
-    function selectWheelMinute(val, el) {
+    function highlightWheelHour(val) {
+      selectedWheelHour = val;
+      document.querySelectorAll("#wheelScrollHours .wheel-scroll-item").forEach(item => {
+        if (item.getAttribute("data-val") === val) {
+          item.className = "wheel-scroll-item text-lg font-black select-none text-white transition scale-110";
+        } else {
+          item.className = "wheel-scroll-item text-sm font-semibold select-none text-gray-500 hover:text-gray-300 transition";
+        }
+      });
+    }
+
+    function highlightWheelMinute(val) {
       selectedWheelMinute = val;
       document.querySelectorAll("#wheelScrollMinutes .wheel-scroll-item").forEach(item => {
-        item.classList.remove("text-ios-teal", "font-black", "text-base");
-        item.classList.add("text-gray-400");
+        if (item.getAttribute("data-val") === val) {
+          item.className = "wheel-scroll-item text-lg font-black select-none text-ios-teal transition scale-110";
+        } else {
+          item.className = "wheel-scroll-item text-sm font-semibold select-none text-gray-500 hover:text-gray-300 transition";
+        }
       });
-      if (el) {
-        el.classList.add("text-ios-teal", "font-black", "text-base");
-        el.classList.remove("text-gray-400");
-      }
+    }
+
+    function handleWheelColumnScroll(type) {
+      clearTimeout(wheelScrollTimeout);
+      wheelScrollTimeout = setTimeout(() => {
+        const colId = type === 'hour' ? "wheelScrollHours" : "wheelScrollMinutes";
+        const container = document.getElementById(colId);
+        if (!container) return;
+
+        const centerPos = container.scrollTop + (container.clientHeight / 2);
+        const items = container.querySelectorAll(".wheel-scroll-item");
+        let closestItem = null;
+        let minDiff = Infinity;
+
+        items.forEach(item => {
+          const itemCenter = item.offsetTop + (item.clientHeight / 2);
+          const diff = Math.abs(itemCenter - centerPos);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestItem = item;
+          }
+        });
+
+        if (closestItem) {
+          const val = closestItem.getAttribute("data-val");
+          if (type === 'hour') {
+            highlightWheelHour(val);
+          } else {
+            highlightWheelMinute(val);
+          }
+        }
+      }, 60);
     }
 
     function openIosWheelTimePicker(targetInputId, isDateTime = false) {
@@ -2057,7 +2146,7 @@
           const parts = existingVal.split("T");
           dateInput.value = parts[0];
           const timeParts = (parts[1] || "09:00").split(":");
-          selectedWheelHour = timeParts[0] || "09";
+          selectedWheelHour = String(parseInt(timeParts[0] || "9")).padStart(2, "0");
           const rawMin = parseInt(timeParts[1] || "0");
           selectedWheelMinute = String(Math.round(rawMin / 5) * 5 % 60).padStart(2, "0");
         } else {
@@ -2069,7 +2158,7 @@
         dateRow.classList.add("hidden");
         if (existingVal && existingVal.includes(":")) {
           const parts = existingVal.split(":");
-          selectedWheelHour = parts[0] || "09";
+          selectedWheelHour = String(parseInt(parts[0] || "9")).padStart(2, "0");
           const rawMin = parseInt(parts[1] || "0");
           selectedWheelMinute = String(Math.round(rawMin / 5) * 5 % 60).padStart(2, "0");
         } else {
@@ -2078,26 +2167,24 @@
         }
       }
 
-      // Highlight initially selected
-      setTimeout(() => {
-        const hourItems = document.querySelectorAll("#wheelScrollHours .wheel-scroll-item");
-        hourItems.forEach(el => {
-          if (el.innerText === selectedWheelHour) {
-            selectWheelHour(selectedWheelHour, el);
-            el.scrollIntoView({ block: "center", behavior: "smooth" });
-          }
-        });
-
-        const minItems = document.querySelectorAll("#wheelScrollMinutes .wheel-scroll-item");
-        minItems.forEach(el => {
-          if (el.innerText === `:${selectedWheelMinute}`) {
-            selectWheelMinute(selectedWheelMinute, el);
-            el.scrollIntoView({ block: "center", behavior: "smooth" });
-          }
-        });
-      }, 50);
-
       openBottomSheet("modalIosWheelTimePicker");
+
+      // Scroll smoothly to target positions
+      setTimeout(() => {
+        const hoursCol = document.getElementById("wheelScrollHours");
+        const minsCol = document.getElementById("wheelScrollMinutes");
+
+        const targetHourEl = hoursCol ? hoursCol.querySelector(`[data-val="${selectedWheelHour}"]`) : null;
+        if (targetHourEl && hoursCol) {
+          scrollToWheelItem(hoursCol, targetHourEl, selectedWheelHour, 'hour');
+        }
+
+        const targetMinEl = minsCol ? minsCol.querySelector(`[data-val="${selectedWheelMinute}"]`) : null;
+        if (targetMinEl && minsCol) {
+          scrollToWheelItem(minsCol, targetMinEl, selectedWheelMinute, 'minute');
+        }
+      }, 120);
+
       lucide.createIcons();
     }
 
@@ -2313,12 +2400,20 @@
         budgetCap,
         inviteCode,
         companions: companions.length ? companions : ["Dean", "Hannah"],
+        budgetShares: {},
         flights: [],
         stays: [],
         transports: [],
         activities: [],
         tasks: []
       };
+
+      // Set initial equal budget percentage distribution
+      const comps = newTrip.companions;
+      const equalShare = Math.round(100 / comps.length);
+      comps.forEach((c, idx) => {
+        newTrip.budgetShares[c] = idx === 0 ? 100 - equalShare * (comps.length - 1) : equalShare;
+      });
 
       state.trips.push(newTrip);
       state.activeTripId = newId;
@@ -2400,150 +2495,145 @@
       showToast("Trip deleted.");
     }
 
-    // ==================== SHARE TRIP INVITE CODE ====================
-    function openShareTripSheet() {
-      const trip = getActiveTrip();
-      document.getElementById("shareCodeDisplay").innerText = trip.inviteCode || "MEX-74X";
-      openBottomSheet("sheetShareTrip");
-    }
+    // ==================== BUDGET % TARGETS & CALCULATIONS ====================
+    function ensureTripBudgetShares(trip) {
+      if (!trip.budgetShares) trip.budgetShares = {};
+      const companions = trip.companions && trip.companions.length > 0 ? trip.companions : ["Dean", "Hannah"];
 
-    function copyTripCodeOnly() {
-      const trip = getActiveTrip();
-      const code = trip.inviteCode || "MEX-74X";
-      copyToClipboard(code);
-      showToast(`Copied code: ${code}`);
-    }
+      // Ensure every companion has a key
+      companions.forEach(c => {
+        if (typeof trip.budgetShares[c] !== 'number') {
+          trip.budgetShares[c] = Math.round(100 / companions.length);
+        }
+      });
 
-    function copyTripInviteMessage() {
-      const trip = getActiveTrip();
-      const code = trip.inviteCode || "MEX-74X";
-      const text = `Join my holiday "${trip.title}" on TravelPulse! Use Invite Code: ${code} to view and edit our itinerary.`;
-      copyToClipboard(text);
-      showToast("Copied invite message!");
-    }
-
-    function copyToClipboard(text) {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand('copy');
-      } catch (e) {
-        console.warn("Copy failed:", e);
-      }
-      document.body.removeChild(textArea);
-    }
-
-    function handleJoinTripSubmit() {
-      const codeInput = document.getElementById("inputJoinCode").value.trim().toUpperCase();
-      if (!codeInput) {
-        showToast("Please enter a valid code", false);
-        return;
-      }
-
-      const existing = state.trips.find(t => t.inviteCode === codeInput);
-      if (existing) {
-        state.activeTripId = existing.id;
-        saveState();
-        closeBottomSheet("sheetJoinTrip");
-        renderAllViews();
-        showToast(`Joined ${existing.title}!`);
-      } else {
-        // Create synced proxy trip
-        const joinedTrip = {
-          id: "trip_joined_" + Date.now(),
-          title: `Shared Trip (${codeInput})`,
-          route: "Shared Partner Itinerary",
-          startDate: "2027-10-25",
-          endDate: "2027-11-08",
-          budgetCap: 8000,
-          inviteCode: codeInput,
-          companions: ["Dean", "Hannah"],
-          flights: [],
-          stays: [],
-          transports: [],
-          activities: [],
-          tasks: []
-        };
-        state.trips.push(joinedTrip);
-        state.activeTripId = joinedTrip.id;
-        saveState();
-        closeBottomSheet("sheetJoinTrip");
-        renderAllViews();
-        showToast(`Joined trip with code ${codeInput}!`);
+      // Normalize if total differs widely from 100
+      const currentKeys = Object.keys(trip.budgetShares);
+      const total = currentKeys.reduce((acc, k) => acc + (trip.budgetShares[k] || 0), 0);
+      if (total !== 100 && currentKeys.length > 0) {
+        const diff = 100 - total;
+        trip.budgetShares[currentKeys[0]] += diff;
       }
     }
 
-    // ==================== BUDGET CALCULATIONS & ADJUSTMENTS ====================
-    function openBudgetEditModal() {
+    function setBudgetEqualSplitPreset() {
       const trip = getActiveTrip();
-      document.getElementById("inputBudgetModalVal").value = trip.budgetCap || 9500;
-      openBottomSheet("sheetEditBudget");
+      const companions = trip.companions && trip.companions.length > 0 ? trip.companions : ["Dean", "Hannah"];
+      const baseShare = Math.floor(100 / companions.length);
+      const remainder = 100 - (baseShare * companions.length);
+
+      trip.budgetShares = {};
+      companions.forEach((c, idx) => {
+        trip.budgetShares[c] = idx === 0 ? baseShare + remainder : baseShare;
+      });
+
+      saveState();
+      renderBudgetTab();
+      renderOverviewTab();
+      showToast("Budget target split equally!");
     }
 
-    function quickBumpBudget(amount) {
-      const el = document.getElementById("inputBudgetModalVal");
-      const current = parseFloat(el.value) || 0;
-      el.value = current + amount;
+    function setBudgetSoloPreset(travelerIdx = 0) {
+      const trip = getActiveTrip();
+      const companions = trip.companions && trip.companions.length > 0 ? trip.companions : ["Dean", "Hannah"];
+      trip.budgetShares = {};
+      companions.forEach((c, idx) => {
+        trip.budgetShares[c] = idx === travelerIdx ? 100 : 0;
+      });
+
+      saveState();
+      renderBudgetTab();
+      renderOverviewTab();
+      showToast(`Target set to 100% for ${companions[travelerIdx]}!`);
     }
 
-    function saveBudgetModal() {
+    function handleTravelerShareChange(travelerName, newPercent) {
       const trip = getActiveTrip();
-      const val = parseFloat(document.getElementById("inputBudgetModalVal").value);
-      if (!isNaN(val) && val > 0) {
-        trip.budgetCap = val;
-        saveState();
-        renderAllViews();
-        closeBottomSheet("sheetEditBudget");
-        showToast(`Budget cap set to ${formatMoney(val)}!`);
+      ensureTripBudgetShares(trip);
+
+      newPercent = Math.max(0, Math.min(100, parseInt(newPercent) || 0));
+      trip.budgetShares[travelerName] = newPercent;
+
+      // Rebalance other travelers proportionally so total is 100
+      const companions = trip.companions && trip.companions.length > 0 ? trip.companions : ["Dean", "Hannah"];
+      const otherComps = companions.filter(c => c !== travelerName);
+
+      if (otherComps.length === 1) {
+        trip.budgetShares[otherComps[0]] = 100 - newPercent;
+      } else if (otherComps.length > 1) {
+        const remainingToDistribute = 100 - newPercent;
+        const currentOtherSum = otherComps.reduce((acc, c) => acc + (trip.budgetShares[c] || 0), 0);
+
+        if (currentOtherSum === 0) {
+          const split = Math.floor(remainingToDistribute / otherComps.length);
+          otherComps.forEach((c, i) => {
+            trip.budgetShares[c] = i === 0 ? remainingToDistribute - split * (otherComps.length - 1) : split;
+          });
+        } else {
+          let allocated = 0;
+          otherComps.forEach((c, i) => {
+            if (i === otherComps.length - 1) {
+              trip.budgetShares[c] = Math.max(0, remainingToDistribute - allocated);
+            } else {
+              const portion = Math.round((trip.budgetShares[c] / currentOtherSum) * remainingToDistribute);
+              trip.budgetShares[c] = portion;
+              allocated += portion;
+            }
+          });
+        }
       }
+
+      saveState();
+      renderBudgetTab();
+      renderOverviewTab();
     }
 
     function calculateTripFinances() {
       const trip = getActiveTrip();
-      let deanTotal = 0;
-      let hannahTotal = 0;
+      ensureTripBudgetShares(trip);
+
+      const companions = trip.companions && trip.companions.length > 0 ? trip.companions : ["Dean", "Hannah"];
+      const paymentsByPerson = {};
+      companions.forEach(c => paymentsByPerson[c] = 0);
+
       const ledger = [];
 
       // Flights
       (trip.flights || []).forEach(f => {
         const cost = parseFloat(f.cost) || 0;
-        if (f.paidBy === "Hannah") hannahTotal += cost;
-        else deanTotal += cost;
+        const payer = f.paidBy || companions[0] || "Dean";
+        paymentsByPerson[payer] = (paymentsByPerson[payer] || 0) + cost;
         ledger.push({
           title: `Flight: ${f.airline} ${f.flightNum} (${f.from}➔${f.to})`,
           category: "Flights",
           cost,
-          paidBy: f.paidBy || "Dean"
+          paidBy: payer
         });
       });
 
       // Stays
       (trip.stays || []).forEach(s => {
         const cost = parseFloat(s.cost) || 0;
-        if (s.paidBy === "Hannah") hannahTotal += cost;
-        else deanTotal += cost;
+        const payer = s.paidBy || companions[0] || "Dean";
+        paymentsByPerson[payer] = (paymentsByPerson[payer] || 0) + cost;
         ledger.push({
           title: `Hotel: ${s.name} (${s.city})`,
           category: "Accommodations",
           cost,
-          paidBy: s.paidBy || "Dean"
+          paidBy: payer
         });
       });
 
       // Transports
       (trip.transports || []).forEach(t => {
         const cost = parseFloat(t.cost) || 0;
-        if (t.paidBy === "Hannah") hannahTotal += cost;
-        else deanTotal += cost;
+        const payer = t.paidBy || companions[0] || "Dean";
+        paymentsByPerson[payer] = (paymentsByPerson[payer] || 0) + cost;
         ledger.push({
           title: `Transit: ${t.operator} (${t.pickupPlace}➔${t.dropoffPlace})`,
           category: "Transit",
           cost,
-          paidBy: t.paidBy || "Dean"
+          paidBy: payer
         });
       });
 
@@ -2551,28 +2641,42 @@
       (trip.activities || []).forEach(a => {
         const cost = parseFloat(a.cost) || 0;
         if (cost > 0) {
-          if (a.paidBy === "Hannah") hannahTotal += cost;
-          else deanTotal += cost;
+          const payer = a.paidBy || companions[0] || "Dean";
+          paymentsByPerson[payer] = (paymentsByPerson[payer] || 0) + cost;
           ledger.push({
             title: `Activity: ${a.title}`,
             category: "Activities",
             cost,
-            paidBy: a.paidBy || "Dean"
+            paidBy: payer
           });
         }
       });
 
-      const totalSpent = deanTotal + hannahTotal;
-      const fairShare = totalSpent / 2;
+      const totalSpent = Object.values(paymentsByPerson).reduce((a, b) => a + b, 0);
       const cap = trip.budgetCap || 9500;
       const remaining = cap - totalSpent;
       const percentUsed = Math.min(100, Math.round((totalSpent / cap) * 100));
 
+      // Calculate fair share and debt based on target percentages
+      const targetBreakdown = {};
+      companions.forEach(c => {
+        const sharePct = trip.budgetShares[c] !== undefined ? trip.budgetShares[c] : Math.round(100 / companions.length);
+        const targetShareCost = totalSpent * (sharePct / 100);
+        const actualPaid = paymentsByPerson[c] || 0;
+        const balance = actualPaid - targetShareCost; // Positive = paid more than share (owed money), Negative = owes money
+        targetBreakdown[c] = {
+          sharePct,
+          targetShareCost,
+          actualPaid,
+          balance
+        };
+      });
+
       return {
-        deanTotal,
-        hannahTotal,
+        companions,
+        paymentsByPerson,
+        targetBreakdown,
         totalSpent,
-        fairShare,
         cap,
         remaining,
         percentUsed,
@@ -2581,6 +2685,8 @@
     }
 
     function renderBudgetTab() {
+      const trip = getActiveTrip();
+      ensureTripBudgetShares(trip);
       const f = calculateTripFinances();
 
       document.getElementById("budgetCapDisplay").innerText = formatMoney(f.cap);
@@ -2589,26 +2695,71 @@
       document.getElementById("budgetTotalCommitted").innerText = formatMoney(f.totalSpent);
       document.getElementById("budgetRemainingAmount").innerText = formatMoney(f.remaining);
 
-      // Rebalancing formula
-      const diff = Math.abs(f.deanTotal - f.hannahTotal) / 2;
+      // Render Target % Sliders per person
+      const slidersContainer = document.getElementById("travelerPercentSlidersContainer");
+      if (slidersContainer) {
+        slidersContainer.innerHTML = f.companions.map(comp => {
+          const info = f.targetBreakdown[comp] || { sharePct: 50, actualPaid: 0, targetShareCost: 0 };
+          return `
+            <div class="p-3.5 rounded-2xl bg-ios-surfaceHigh border border-white/5 space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-white block">${comp}</span>
+                  <span class="text-[10px] text-ios-gray">Target: ${formatMoney(info.targetShareCost)} of ${formatMoney(f.totalSpent)}</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-sm font-black text-ios-teal">${info.sharePct}%</span>
+                  <span class="text-[10px] text-ios-gray">target</span>
+                </div>
+              </div>
+
+              <!-- Interactive Range Slider -->
+              <input type="range" min="0" max="100" value="${info.sharePct}" step="5" oninput="handleTravelerShareChange('${comp}', this.value)" class="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-ios-teal">
+
+              <div class="flex items-center justify-between text-[11px] pt-0.5 text-gray-400">
+                <span>Paid to date: <strong class="text-white">${formatMoney(info.actualPaid)}</strong></span>
+                <span class="${info.balance >= 0 ? 'text-ios-green' : 'text-ios-orange'} font-bold">
+                  ${info.balance >= 0 ? `+${formatMoney(info.balance)} surplus` : `${formatMoney(Math.abs(info.balance))} due`}
+                </span>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      // Quick preset button label
+      const soloPresetBtn = document.getElementById("btnSoloPreset0");
+      if (soloPresetBtn && f.companions.length > 0) {
+        soloPresetBtn.innerText = `${f.companions[0]} 100%`;
+      }
+
+      // Rebalancing settlement formula based on target shares
+      const debtors = [];
+      const creditors = [];
+
+      f.companions.forEach(c => {
+        const b = f.targetBreakdown[c].balance;
+        if (b < -0.5) debtors.push({ name: c, amount: Math.abs(b) });
+        else if (b > 0.5) creditors.push({ name: c, amount: b });
+      });
+
       let settlementHtml = "";
-      if (Math.abs(f.deanTotal - f.hannahTotal) < 1) {
-        settlementHtml = `<p class="text-xs text-ios-green font-bold text-center">🎉 Spending is perfectly balanced 50/50!</p>`;
-      } else if (f.deanTotal > f.hannahTotal) {
-        settlementHtml = `
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-gray-300">Hannah owes Dean to balance:</span>
-            <span class="font-black text-ios-teal text-sm">${formatMoney(diff)}</span>
-          </div>
-          <p class="text-[10px] text-ios-gray">Dean has paid ${formatMoney(f.deanTotal)} vs. Hannah's ${formatMoney(f.hannahTotal)}.</p>
-        `;
+      if (debtors.length === 0 && creditors.length === 0) {
+        settlementHtml = `<p class="text-xs text-ios-green font-bold text-center">🎉 All spending exactly matches individual target percentages!</p>`;
       } else {
         settlementHtml = `
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-gray-300">Dean owes Hannah to balance:</span>
-            <span class="font-black text-ios-teal text-sm">${formatMoney(diff)}</span>
+          <div class="space-y-2">
+            ${debtors.map(d => {
+              const mainCreditor = creditors[0] || { name: "others", amount: d.amount };
+              return `
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-300"><strong>${d.name}</strong> owes <strong>${mainCreditor.name}</strong>:</span>
+                  <span class="font-black text-ios-teal text-sm">${formatMoney(d.amount)}</span>
+                </div>
+              `;
+            }).join("")}
           </div>
-          <p class="text-[10px] text-ios-gray">Hannah has paid ${formatMoney(f.hannahTotal)} vs. Dean's ${formatMoney(f.deanTotal)}.</p>
+          <p class="text-[10px] text-ios-gray pt-1 text-center">Calculated from individual target percentage shares vs. actual expenses logged.</p>
         `;
       }
       document.getElementById("settlementBox").innerHTML = settlementHtml;
@@ -2628,34 +2779,10 @@
       }
     }
 
-    function handleSaveManualExpense(e) {
-      e.preventDefault();
-      const desc = document.getElementById("manualExpDesc").value.trim();
-      const cost = parseFloat(document.getElementById("manualExpCost").value) || 0;
-      const paidBy = document.getElementById("manualExpPayer").value;
-
-      const trip = getActiveTrip();
-      trip.activities.push({
-        id: "exp_" + Date.now(),
-        title: desc,
-        category: "Dining & Culinary",
-        city: "General",
-        date: trip.startDate,
-        time: "12:00",
-        cost: cost,
-        paidBy: paidBy,
-        notes: "Direct budget entry"
-      });
-
-      saveState();
-      closeBottomSheet("sheetAddExpense");
-      renderAllViews();
-      showToast(`Added ${formatMoney(cost)} expense!`);
-    }
-
     // ==================== OVERVIEW VIEW ====================
     function renderOverviewTab() {
       const trip = getActiveTrip();
+      ensureTripBudgetShares(trip);
       const finances = calculateTripFinances();
 
       // Top bar updates
@@ -2714,17 +2841,39 @@
         `;
       }
 
-      // Balances
-      document.getElementById("overviewDeanPaid").innerText = formatMoney(finances.deanTotal);
-      document.getElementById("overviewHannahPaid").innerText = formatMoney(finances.hannahTotal);
+      // Balances overview for all companions
+      const travelersContainer = document.getElementById("overviewTravelersBalances");
+      if (travelersContainer) {
+        travelersContainer.innerHTML = finances.companions.map(comp => {
+          const info = finances.targetBreakdown[comp] || { sharePct: 50, actualPaid: 0 };
+          return `
+            <div class="p-3 rounded-xl bg-ios-surfaceHigh border border-white/5 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-ios-gray font-medium">${comp}</span>
+                <span class="text-[10px] font-bold text-ios-teal">${info.sharePct}% target</span>
+              </div>
+              <p class="text-base font-black text-white">${formatMoney(info.actualPaid)}</p>
+            </div>
+          `;
+        }).join("");
+      }
 
-      const diff = Math.abs(finances.deanTotal - finances.hannahTotal) / 2;
-      if (finances.deanTotal > finances.hannahTotal) {
-        document.getElementById("overviewSplitSummary").innerText = `Hannah owes Dean ${formatMoney(diff)} to settle 50/50.`;
-      } else if (finances.hannahTotal > finances.deanTotal) {
-        document.getElementById("overviewSplitSummary").innerText = `Dean owes Hannah ${formatMoney(diff)} to settle 50/50.`;
-      } else {
-        document.getElementById("overviewSplitSummary").innerText = "Spending is completely even!";
+      // Summary text
+      const debtors = [];
+      const creditors = [];
+      finances.companions.forEach(c => {
+        const b = finances.targetBreakdown[c].balance;
+        if (b < -0.5) debtors.push({ name: c, amount: Math.abs(b) });
+        else if (b > 0.5) creditors.push({ name: c, amount: b });
+      });
+
+      const summaryEl = document.getElementById("overviewSplitSummary");
+      if (summaryEl) {
+        if (debtors.length > 0 && creditors.length > 0) {
+          summaryEl.innerText = `${debtors[0].name} owes ${creditors[0].name} ${formatMoney(debtors[0].amount)} based on target shares.`;
+        } else {
+          summaryEl.innerText = "All spending matches target allocations!";
+        }
       }
 
       lucide.createIcons();
