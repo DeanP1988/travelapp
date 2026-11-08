@@ -144,12 +144,17 @@
       overscroll-behavior-y: contain;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
+      padding-top: 88px !important;
+      padding-bottom: 88px !important;
     }
     .wheel-scroll-item {
       scroll-snap-align: center;
       scroll-snap-stop: always;
-      height: 44px;
-      line-height: 44px;
+      height: 44px !important;
+      line-height: 44px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 </head>
@@ -1658,15 +1663,15 @@
       </div>
 
       <!-- 3D Wheel Roller Container -->
-      <div class="relative py-3">
+      <div class="relative py-2">
         <!-- Lens highlight -->
-        <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-11 bg-white/10 border-y border-white/20 rounded-xl pointer-events-none z-10 shadow-sm"></div>
+        <div class="absolute inset-x-2 top-1/2 -translate-y-1/2 h-[44px] bg-white/10 border-y border-white/25 rounded-xl pointer-events-none z-10 shadow-sm"></div>
 
         <div class="grid grid-cols-2 gap-3 text-center text-base font-bold text-white relative z-0">
           <!-- Hours Column -->
           <div class="space-y-1">
             <span class="text-[10px] font-bold text-ios-gray uppercase block pb-1">Hour (00–23)</span>
-            <div id="wheelScrollHours" class="h-44 overflow-y-auto ios-scroll wheel-scroll-col py-16 space-y-0.5" onscroll="handleWheelColumnScroll('hour')">
+            <div id="wheelScrollHours" class="h-[220px] overflow-y-auto ios-scroll wheel-scroll-col space-y-0" onscroll="handleWheelColumnScroll('hour')">
               <!-- Populated 00 - 23 -->
             </div>
           </div>
@@ -1674,7 +1679,7 @@
           <!-- Minutes Column (5-Min Interval) -->
           <div class="space-y-1">
             <span class="text-[10px] font-bold text-ios-teal uppercase block pb-1">Minute (:00–:55)</span>
-            <div id="wheelScrollMinutes" class="h-44 overflow-y-auto ios-scroll wheel-scroll-col py-16 space-y-0.5" onscroll="handleWheelColumnScroll('minute')">
+            <div id="wheelScrollMinutes" class="h-[220px] overflow-y-auto ios-scroll wheel-scroll-col space-y-0" onscroll="handleWheelColumnScroll('minute')">
               <!-- Populated 00, 05, 10, 15... 55 -->
             </div>
           </div>
@@ -2063,8 +2068,8 @@
 
     function scrollToWheelItem(container, element, val, type) {
       if (!element || !container) return;
-      const topOffset = element.offsetTop - (container.clientHeight / 2) + (element.clientHeight / 2);
-      container.scrollTo({ top: topOffset, behavior: 'smooth' });
+      const targetScrollTop = element.offsetTop - 88;
+      container.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
 
       if (type === 'hour') {
         highlightWheelHour(val);
@@ -2102,13 +2107,14 @@
         const container = document.getElementById(colId);
         if (!container) return;
 
-        const centerPos = container.scrollTop + (container.clientHeight / 2);
+        // Container is 220px high, center is at scrollTop + 110px
+        const centerPos = container.scrollTop + 110;
         const items = container.querySelectorAll(".wheel-scroll-item");
         let closestItem = null;
         let minDiff = Infinity;
 
         items.forEach(item => {
-          const itemCenter = item.offsetTop + (item.clientHeight / 2);
+          const itemCenter = item.offsetTop + (item.offsetHeight / 2);
           const diff = Math.abs(itemCenter - centerPos);
           if (diff < minDiff) {
             minDiff = diff;
@@ -2124,7 +2130,7 @@
             highlightWheelMinute(val);
           }
         }
-      }, 60);
+      }, 50);
     }
 
     function openIosWheelTimePicker(targetInputId, isDateTime = false) {
