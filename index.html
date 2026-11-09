@@ -902,6 +902,95 @@
     </div>
   </div>
 
+  <!-- SHEET 4B: EDIT ACTIVITY MANUAL -->
+  <div id="sheetEditActivityManual" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
+    <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
+      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white">Edit Activity</h3>
+          <p class="text-[11px] text-ios-gray">Update details, location distance & booking link</p>
+        </div>
+        <button onclick="closeBottomSheet('sheetEditActivityManual')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveEditedActivity(event)" class="space-y-3">
+        <input type="hidden" id="editActId">
+
+        <div>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Activity Title</label>
+          <input type="text" id="editActTitle" required placeholder="e.g. Monte Albán Ruins Guided Tour" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">City</label>
+            <input type="text" id="editActCity" required placeholder="e.g. Mexico City" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Category</label>
+            <select id="editActCategory" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="Tours & Excursions">Tours & Excursions</option>
+              <option value="Food & Dining">Food & Dining</option>
+              <option value="Sights & Culture">Sights & Culture</option>
+              <option value="Shopping & Markets">Shopping & Markets</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Distance From City Centre</label>
+            <input type="text" id="editActDist" placeholder="e.g. 9 km from Oaxaca Centre" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Approx. Duration</label>
+            <input type="text" id="editActDuration" placeholder="e.g. 3.5 hrs" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Cost ($ AUD)</label>
+            <input type="number" id="editActCost" placeholder="40" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Date</label>
+            <div class="relative w-full">
+              <input type="date" id="editActDate" class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white" onclick="openDatePickerFallback(this)">
+              <button type="button" onclick="triggerPicker('editActDate')" class="absolute right-3 top-3.5 text-ios-teal">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Paid By</label>
+            <select id="editActPayer" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="Dean">Dean</option>
+              <option value="Hannah">Hannah</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Booking Website URL</label>
+          <input type="url" id="editActUrl" placeholder="https://..." class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Highlights & Notes</label>
+          <textarea id="editActNotes" rows="2" placeholder="Wear walking shoes, pre-book entry ticket..." class="w-full p-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white"></textarea>
+        </div>
+
+        <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
+          Save Activity Changes
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- SHEET 5: ADD TRANSPORT BOOKING -->
   <div id="sheetAddTransport" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
     <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
@@ -990,6 +1079,101 @@
 
         <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
           Save Transit Booking
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SHEET 5B: EDIT TRANSPORT BOOKING -->
+  <div id="sheetEditTransport" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
+    <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
+      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white">Edit Transit Booking</h3>
+          <p class="text-[11px] text-ios-gray">Update rental car, bus, train, or ferry</p>
+        </div>
+        <button onclick="closeBottomSheet('sheetEditTransport')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveEditedTransport(event)" class="space-y-3">
+        <input type="hidden" id="editTransId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Transit Type</label>
+            <select id="editTransType" onchange="updateEditTransportFormFields()" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="car">Rental Car</option>
+              <option value="bus">Coach / Bus (ADO)</option>
+              <option value="train">Train / Tren Maya</option>
+              <option value="ferry">Ferry / Boat</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Company / Operator</label>
+            <input type="text" id="editTransOperator" required placeholder="e.g. Hertz, ADO Platino" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="editTransLabelPickupPlace">Pickup / Departure Point</label>
+            <input type="text" id="editTransPickupPlace" required placeholder="e.g. Cancun Airport (CUN)" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="editTransLabelDropoffPlace">Drop-off / Arrival Point</label>
+            <input type="text" id="editTransDropoffPlace" required placeholder="e.g. Tulum Beach Office" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="editTransLabelPickupDate">Pickup / Departure Time</label>
+            <div class="relative w-full">
+              <input type="text" id="editTransPickupTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editTransPickupTime', true)">
+              <button type="button" onclick="openIosWheelTimePicker('editTransPickupTime', true)" class="absolute right-3 top-3.5 text-ios-teal">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="editTransLabelDropoffDate">Drop-off / Arrival Time</label>
+            <div class="relative w-full">
+              <input type="text" id="editTransDropoffTime" readonly placeholder="Select Date & 5-Min Time" class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editTransDropoffTime', true)">
+              <button type="button" onclick="openIosWheelTimePicker('editTransDropoffTime', true)" class="absolute right-3 top-3.5 text-ios-teal">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">PNR / Ref #</label>
+            <input type="text" id="editTransRef" placeholder="e.g. HZ-99120" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Cost ($ AUD)</label>
+            <input type="number" id="editTransCost" required placeholder="240" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Paid By</label>
+            <select id="editTransPayer" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="Dean">Dean</option>
+              <option value="Hannah">Hannah</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Booking Notes / Inclusions</label>
+          <input type="text" id="editTransNotes" placeholder="e.g. Compact SUV with full insurance and toll transponder" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+        </div>
+
+        <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
+          Save Transit Changes
         </button>
       </form>
     </div>
@@ -3630,19 +3814,76 @@
 
           ${a.notes ? `<p class="text-xs text-gray-400 bg-ios-surfaceHigh/60 p-2.5 rounded-xl border border-white/5">${a.notes}</p>` : ''}
 
-          <div class="flex items-center justify-between pt-1">
+          <div class="flex items-center justify-between pt-1 border-t border-white/5">
             ${a.url ? `
-              <a href="${a.url}" target="_blank" rel="noopener noreferrer" class="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
+              <a href="${a.url}" target="_blank" rel="noopener noreferrer" class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
                 <span>Book / Website</span>
                 <i data-lucide="external-link" class="w-3.5 h-3.5 text-ios-teal"></i>
               </a>
             ` : '<div></div>'}
-            <button onclick="removeActivity('${a.id}')" class="text-xs text-ios-red hover:underline">Remove</button>
+            <div class="flex items-center space-x-3">
+              <button onclick="promptEditActivity('${a.id}')" class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
+                <i data-lucide="pencil" class="w-3.5 h-3.5 text-ios-teal"></i>
+                <span>Edit</span>
+              </button>
+              <button onclick="removeActivity('${a.id}')" class="text-xs text-ios-red hover:underline">Remove</button>
+            </div>
           </div>
         </div>
       `).join("");
 
       lucide.createIcons();
+    }
+
+    function promptEditActivity(actId) {
+      const trip = getActiveTrip();
+      const act = (trip.activities || []).find(a => a.id === actId);
+      if (!act) return;
+
+      document.getElementById("editActId").value = act.id;
+      document.getElementById("editActTitle").value = act.title || "";
+      document.getElementById("editActCity").value = act.city || "";
+      document.getElementById("editActCategory").value = act.category || "Tours & Excursions";
+      document.getElementById("editActDist").value = act.distanceFromCentre || "";
+      document.getElementById("editActDuration").value = act.approxDuration || "";
+      document.getElementById("editActCost").value = act.cost !== undefined ? act.cost : 0;
+      document.getElementById("editActDate").value = act.date || "";
+      document.getElementById("editActUrl").value = act.url || "";
+      document.getElementById("editActNotes").value = act.notes || "";
+
+      // Populate companion options dynamically for payer
+      const payerSelect = document.getElementById("editActPayer");
+      if (payerSelect) {
+        const companions = trip.companions && trip.companions.length > 0 ? trip.companions : ["Dean", "Hannah"];
+        payerSelect.innerHTML = companions.map(c => `<option value="${c}">${c}</option>`).join("");
+        payerSelect.value = act.paidBy || companions[0];
+      }
+
+      openBottomSheet("sheetEditActivityManual");
+    }
+
+    function handleSaveEditedActivity(e) {
+      e.preventDefault();
+      const trip = getActiveTrip();
+      const actId = document.getElementById("editActId").value;
+      const act = (trip.activities || []).find(a => a.id === actId);
+      if (!act) return;
+
+      act.title = document.getElementById("editActTitle").value.trim();
+      act.city = document.getElementById("editActCity").value.trim();
+      act.category = document.getElementById("editActCategory").value;
+      act.distanceFromCentre = document.getElementById("editActDist").value.trim();
+      act.approxDuration = document.getElementById("editActDuration").value.trim();
+      act.cost = parseFloat(document.getElementById("editActCost").value) || 0;
+      act.date = document.getElementById("editActDate").value || trip.startDate;
+      act.paidBy = document.getElementById("editActPayer").value;
+      act.url = document.getElementById("editActUrl").value.trim();
+      act.notes = document.getElementById("editActNotes").value.trim();
+
+      saveState();
+      closeBottomSheet("sheetEditActivityManual");
+      renderAllViews();
+      showToast(`Updated activity: ${act.title}`);
     }
 
     function removeActivity(id) {
@@ -3749,16 +3990,16 @@
       btn.innerHTML = `<span class="animate-spin mr-2">🌀</span> Scouting Activities in ${city}...`;
       resultsContainer.innerHTML = `<div class="p-6 text-center text-xs text-ios-gray">Scouring real-time top-rated ${cat} in ${city} with Google Search grounding...</div>`;
 
-      const prompt = `You are a professional travel scout. Search for 3 real-world, highly rated ${cat} strictly located in or very near "${city}".
+      const prompt = `You are an expert local guide and travel scout. Search for 6 diverse, high-rated ${cat} and top things to do strictly located in or around "${city}". Include a great mix of iconic landmarks, culinary hotspots, cultural sights, and local hidden gems.
       Do NOT mention or use any other cities unless they are directly part of "${city}".
       
-      For each item provide:
+      For each of the 6 items provide:
       - title (exact venue/activity name in ${city})
-      - distanceFromCentre (e.g. "1.5 km from central square", "12 km north")
-      - approxDuration (e.g. "3.5 hrs", "Full Day")
+      - distanceFromCentre (e.g. "0.8 km from city centre", "15 km north")
+      - approxDuration (e.g. "2.5 hrs", "Half Day", "Full Day")
       - approxCostAud (approx cost in Australian Dollars, number only)
-      - bookingUrl (official website or reputable Viator/GetYourGuide link)
-      - highlights (2 sentences why this specific ${city} attraction is iconic)
+      - bookingUrl (official website, Viator, or GetYourGuide direct booking link)
+      - highlights (2 compelling sentences why this specific ${city} attraction is a must-do)
       
       Return ONLY valid JSON matching this schema:
       {
@@ -3804,18 +4045,50 @@
         {
           title: `${city} Highlights & Historic Walking Tour`,
           distanceFromCentre: `0.5 km from ${city} Centre`,
-          approxDuration: "3.5 hrs",
+          approxDuration: "3 hrs",
           approxCostAud: 65,
           bookingUrl: "https://www.viator.com",
-          highlights: `Guided cultural and architectural journey through the historic center of ${city} visiting key landmarks.`
+          highlights: `Guided cultural and architectural journey through the historic center of ${city} visiting key landmarks and plazas.`
         },
         {
           title: `${city} Culinary & Market Tasting Experience`,
           distanceFromCentre: `1.2 km from ${city} Centre`,
-          approxDuration: "3 hrs",
+          approxDuration: "3.5 hrs",
           approxCostAud: 85,
           bookingUrl: "https://www.getyourguide.com",
-          highlights: `Sample renowned local delicacies, wines/beverages, and authentic regional dishes with an expert guide in ${city}.`
+          highlights: `Sample renowned local delicacies, street eats, artisanal treats, and authentic regional specialities with an expert foodie.`
+        },
+        {
+          title: `${city} Iconic Landmarks & Panoramic Lookout`,
+          distanceFromCentre: `3.5 km from ${city} Centre`,
+          approxDuration: "2 hrs",
+          approxCostAud: 35,
+          bookingUrl: "https://www.google.com/travel",
+          highlights: `Breathtaking scenic vantage point overlooking the entire cityscape with historic monuments and photo stops.`
+        },
+        {
+          title: `${city} Artisan Craft & Local Market Discovery`,
+          distanceFromCentre: `1.8 km from ${city} Centre`,
+          approxDuration: "2.5 hrs",
+          approxCostAud: 20,
+          bookingUrl: "https://www.tripadvisor.com",
+          highlights: `Explore authentic artisan workshops, textiles, pottery, and vibrant stalls showcasing master craftspeople.`
+        },
+        {
+          title: `${city} Ancient Ruins & Archaeological Day Excursion`,
+          distanceFromCentre: `22 km outside ${city}`,
+          approxDuration: "5 hrs",
+          approxCostAud: 115,
+          bookingUrl: "https://www.viator.com",
+          highlights: `Fascinating archaeological exploration of ancient temples, stone carvings, and monumental heritage with certified historian.`
+        },
+        {
+          title: `${city} Evening Sunset & Dinner Tasting Tour`,
+          distanceFromCentre: `0.9 km from ${city} Centre`,
+          approxDuration: "3 hrs",
+          approxCostAud: 125,
+          bookingUrl: "https://www.getyourguide.com",
+          highlights: `Sip rooftop drinks during golden hour followed by a curated multi-course dinner celebrating regional flavors.`
         }
       ];
       renderAiActivityResults(fallbacks, city, cat);
@@ -4358,6 +4631,23 @@
       }
     }
 
+    function updateEditTransportFormFields() {
+      const type = document.getElementById("editTransType").value;
+      const lblPick = document.getElementById("editTransLabelPickupPlace");
+      const lblDrop = document.getElementById("editTransLabelDropoffPlace");
+
+      if (type === "car") {
+        lblPick.innerText = "Pickup Location (Office / Airport)";
+        lblDrop.innerText = "Drop-off Location";
+      } else if (type === "ferry") {
+        lblPick.innerText = "Departure Port / Pier";
+        lblDrop.innerText = "Arrival Port / Pier";
+      } else {
+        lblPick.innerText = "Origin Station / Stop";
+        lblDrop.innerText = "Destination Station / Stop";
+      }
+    }
+
     function renderTransportTab() {
       const trip = getActiveTrip();
       const container = document.getElementById("transportListContainer");
@@ -4416,13 +4706,72 @@
 
             <div class="flex items-center justify-between text-xs pt-1 border-t border-white/5">
               <span class="text-[10px] font-mono text-gray-400">Ref: ${t.ref || 'N/A'}</span>
-              <button onclick="removeTransport('${t.id}')" class="text-xs text-ios-red hover:underline">Remove</button>
+              <div class="flex items-center space-x-3">
+                <button onclick="promptEditTransport('${t.id}')" class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5 text-ios-teal"></i>
+                  <span>Edit</span>
+                </button>
+                <button onclick="removeTransport('${t.id}')" class="text-xs text-ios-red hover:underline">Remove</button>
+              </div>
             </div>
           </div>
         `;
       }).join("");
 
       lucide.createIcons();
+    }
+
+    function promptEditTransport(transId) {
+      const trip = getActiveTrip();
+      const t = (trip.transports || []).find(item => item.id === transId);
+      if (!t) return;
+
+      document.getElementById("editTransId").value = t.id;
+      document.getElementById("editTransType").value = t.type || "car";
+      document.getElementById("editTransOperator").value = t.operator || "";
+      document.getElementById("editTransPickupPlace").value = t.pickupPlace || "";
+      document.getElementById("editTransDropoffPlace").value = t.dropoffPlace || "";
+      document.getElementById("editTransPickupTime").value = t.pickupTime || "";
+      document.getElementById("editTransDropoffTime").value = t.dropoffTime || "";
+      document.getElementById("editTransRef").value = t.ref || "";
+      document.getElementById("editTransCost").value = t.cost !== undefined ? t.cost : 0;
+      document.getElementById("editTransNotes").value = t.notes || "";
+
+      updateEditTransportFormFields();
+
+      // Populate companion options dynamically for payer
+      const payerSelect = document.getElementById("editTransPayer");
+      if (payerSelect) {
+        const companions = trip.companions && trip.companions.length > 0 ? trip.companions : ["Dean", "Hannah"];
+        payerSelect.innerHTML = companions.map(c => `<option value="${c}">${c}</option>`).join("");
+        payerSelect.value = t.paidBy || companions[0];
+      }
+
+      openBottomSheet("sheetEditTransport");
+    }
+
+    function handleSaveEditedTransport(e) {
+      e.preventDefault();
+      const trip = getActiveTrip();
+      const transId = document.getElementById("editTransId").value;
+      const t = (trip.transports || []).find(item => item.id === transId);
+      if (!t) return;
+
+      t.type = document.getElementById("editTransType").value;
+      t.operator = document.getElementById("editTransOperator").value.trim();
+      t.pickupPlace = document.getElementById("editTransPickupPlace").value.trim();
+      t.dropoffPlace = document.getElementById("editTransDropoffPlace").value.trim();
+      t.pickupTime = document.getElementById("editTransPickupTime").value;
+      t.dropoffTime = document.getElementById("editTransDropoffTime").value;
+      t.ref = document.getElementById("editTransRef").value.trim().toUpperCase();
+      t.cost = parseFloat(document.getElementById("editTransCost").value) || 0;
+      t.paidBy = document.getElementById("editTransPayer").value;
+      t.notes = document.getElementById("editTransNotes").value.trim();
+
+      saveState();
+      closeBottomSheet("sheetEditTransport");
+      renderAllViews();
+      showToast(`Updated transit: ${t.operator}`);
     }
 
     function removeTransport(id) {
