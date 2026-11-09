@@ -3551,6 +3551,34 @@
     }
 
     // ==================== INTERACTIVE MAP ====================
+    // Built-in high-accuracy coordinate dictionary for fast zero-latency resolution
+    const KNOWN_DESTINATION_COORDS = {
+      "mexico city": { lat: 19.4326, lng: -99.1332 },
+      "cdmx": { lat: 19.4326, lng: -99.1332 },
+      "oaxaca": { lat: 17.0732, lng: -96.7266 },
+      "tulum": { lat: 20.2114, lng: -87.4654 },
+      "cancun": { lat: 21.1619, lng: -86.8515 },
+      "riviera maya": { lat: 20.6274, lng: -87.0799 },
+      "tokyo": { lat: 35.6762, lng: 139.6503 },
+      "kyoto": { lat: 35.0116, lng: 135.7681 },
+      "osaka": { lat: 34.6937, lng: 135.5023 },
+      "paris": { lat: 48.8566, lng: 2.3522 },
+      "rome": { lat: 41.9028, lng: 12.4964 },
+      "florence": { lat: 43.7696, lng: 11.2558 },
+      "london": { lat: 51.5074, lng: -0.1278 },
+      "sydney": { lat: -33.8688, lng: 151.2093 },
+      "melbourne": { lat: -37.8136, lng: 144.9631 },
+      "bali": { lat: -8.4095, lng: 115.1889 },
+      "new york": { lat: 40.7128, lng: -74.0060 },
+      "los angeles": { lat: 34.0522, lng: -118.2437 },
+      "honolulu": { lat: 21.3069, lng: -157.8583 },
+      "barcelona": { lat: 41.3879, lng: 2.1699 },
+      "madrid": { lat: 40.4168, lng: -3.7038 },
+      "singapore": { lat: 1.3521, lng: 103.8198 },
+      "bangkok": { lat: 13.7563, lng: 100.5018 },
+      "hanoi": { lat: 21.0285, lng: 105.8542 }
+    };
+
     function initInteractiveMap() {
       const mapContainer = document.getElementById("overviewMap");
       if (!mapContainer || map) return;
@@ -3573,25 +3601,52 @@
     // Geocoding cache to prevent redundant lookups
     const geocodeCache = {};
 
-    async function geocodePlace(placeName) {
+    async function geocodePlace(placeName, tripContext = "") {
       if (!placeName || placeName.trim().length === 0) return null;
       const clean = placeName.trim().toLowerCase();
-      if (geocodeCache[clean]) return geocodeCache[clean];
+
+      // 1. Direct dictionary match
+      for (const [key, coords] of Object.entries(KNOWN_DESTINATION_COORDS)) {
+        if (clean === key || clean.includes(key)) {
+          return coords;
+        }
+      }
+
+      // 2. Check local memory cache
+      const cacheKey = `${clean}::${(tripContext || "").toLowerCase()}`;
+      if (geocodeCache[cacheKey]) return geocodeCache[cacheKey];
+
+      // 3. Forward geocode using Nominatim with context
+      const query = tripContext && !clean.includes(tripContext.toLowerCase())
+        ? `${clean}, ${tripContext}`
+        : clean;
 
       try {
-        const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(clean)}&limit=1`, {
-          headers: { 'Accept-Language': 'en' }
+        const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`, {
+          headers: {
+            'Accept-Language': 'en',
+            'User-Agent': 'TravelPulseApp/10.2 (https://github.com)'
+          }
         });
         const data = await resp.json();
         if (data && data.length > 0) {
           const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-          geocodeCache[clean] = coords;
+          geocodeCache[cacheKey] = coords;
           return coords;
         }
       } catch (err) {
-        console.warn("Geocoding lookup failed for:", placeName, err);
+        console.warn("Geocoding lookup failed for:", query, err);
       }
       return null;
+    }
+
+    function extractTripDestinationContext(trip) {
+      if (!trip) return "";
+      if (trip.route) {
+        const stops = trip.route.split(/➔|->|,/).map(s => s.trim()).filter(Boolean);
+        if (stops.length > 0) return stops[stops.length - 1];
+      }
+      return trip.title || "";
     }
 
     async function updateMapMarkers(filterType = "all") {
@@ -3601,6 +3656,7 @@
       const trip = getActiveTrip();
       if (!trip) return;
 
+      const tripContext = extractTripDestinationContext(trip);
       const bounds = [];
 
       // Stays
@@ -3609,13 +3665,13 @@
           let lat = stay.lat;
           let lng = stay.lng;
 
-          // If coordinates are missing or zero, geocode dynamically by city & name
-          if (!lat || !lng) {
-            const query = `${stay.name || ''}, ${stay.city || ''}`.trim();
-            const geo = await geocodePlace(query) || await geocodePlace(stay.city);
+          // Always verify coordinates belong to the current stay city
+          if (!lat || !lng || stay.needsGeocode) {
+            const geo = await geocodePlace(`${stay.name}, ${stay.city}`, tripContext) || await geocodePlace(stay.city, tripContext);
             if (geo) {
               stay.lat = geo.lat;
               stay.lng = geo.lng;
+              delete stay.needsGeocode;
               lat = geo.lat;
               lng = geo.lng;
             }
@@ -3624,7 +3680,7 @@
           if (lat && lng) {
             bounds.push([lat, lng]);
             const marker = L.circleMarker([lat, lng], {
-              radius: 8,
+              radius: 9,
               fillColor: "#BF5AF2",
               color: "#ffffff",
               weight: 2,
@@ -3632,10 +3688,10 @@
             });
             marker.bindPopup(`
               <div class="text-xs p-1">
-                <span class="text-[9px] font-bold text-ios-purple uppercase tracking-wider block">🏨 Stay</span>
+                <span class="text-[9px] font-bold text-ios-purple uppercase tracking-wider block">🏨 Accommodation</span>
                 <strong class="text-white block text-sm">${stay.name}</strong>
                 <span class="text-gray-300 block">${stay.city}</span>
-                <span class="text-ios-teal font-mono font-bold block pt-1">${formatMoney(stay.cost)}</span>
+                <span class="text-ios-teal font-mono font-bold block pt-1">${formatMoney(stay.cost)} • ${formatDateFriendly(stay.checkIn)}</span>
               </div>
             `);
             mapMarkersLayer.addLayer(marker);
@@ -3649,13 +3705,12 @@
           let lat = act.lat;
           let lng = act.lng;
 
-          // If coordinates are missing, geocode dynamically by title & city
-          if (!lat || !lng) {
-            const query = `${act.title || ''}, ${act.city || ''}`.trim();
-            const geo = await geocodePlace(query) || await geocodePlace(act.city);
+          if (!lat || !lng || act.needsGeocode) {
+            const geo = await geocodePlace(`${act.title}, ${act.city}`, tripContext) || await geocodePlace(act.city, tripContext);
             if (geo) {
               act.lat = geo.lat;
               act.lng = geo.lng;
+              delete act.needsGeocode;
               lat = geo.lat;
               lng = geo.lng;
             }
@@ -3664,7 +3719,7 @@
           if (lat && lng) {
             bounds.push([lat, lng]);
             const marker = L.circleMarker([lat, lng], {
-              radius: 7,
+              radius: 8,
               fillColor: "#64D2FF",
               color: "#ffffff",
               weight: 2,
@@ -3683,7 +3738,34 @@
         }
       }
 
-      // Fit map bounds to current markers, or fallback to route geocoding
+      // Transit / Route Stops
+      if (filterType === "all") {
+        for (const trans of (trip.transports || [])) {
+          if (trans.pickupPlace) {
+            const geo = await geocodePlace(trans.pickupPlace, tripContext);
+            if (geo) {
+              bounds.push([geo.lat, geo.lng]);
+              const marker = L.circleMarker([geo.lat, geo.lng], {
+                radius: 7,
+                fillColor: "#30D158",
+                color: "#ffffff",
+                weight: 2,
+                fillOpacity: 0.9
+              });
+              marker.bindPopup(`
+                <div class="text-xs p-1">
+                  <span class="text-[9px] font-bold text-ios-green uppercase tracking-wider block">🚗 Transit Pickup</span>
+                  <strong class="text-white block text-sm">${trans.operator}</strong>
+                  <span class="text-gray-300 block">${trans.pickupPlace}</span>
+                </div>
+              `);
+              mapMarkersLayer.addLayer(marker);
+            }
+          }
+        }
+      }
+
+      // Auto-fit the map directly to this trip's actual places
       if (bounds.length > 0) {
         if (bounds.length === 1) {
           map.setView(bounds[0], 12);
@@ -3691,13 +3773,13 @@
           map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
         }
       } else {
-        // Fallback: Geocode destination from route or trip title
+        // Fallback: Geocode destination from route or trip title directly
         const routeStops = (trip.route || trip.title || "").split(/➔|->|,/).map(s => s.trim()).filter(Boolean);
         const destination = routeStops[routeStops.length - 1] || routeStops[0] || trip.title;
         if (destination) {
           const geo = await geocodePlace(destination);
           if (geo) {
-            map.setView([geo.lat, geo.lng], 10);
+            map.setView([geo.lat, geo.lng], 11);
           }
         }
       }
@@ -3718,7 +3800,9 @@
       const trip = getActiveTrip();
       if (!trip) return;
 
+      const tripContext = extractTripDestinationContext(trip);
       const bounds = [];
+
       (trip.stays || []).forEach(s => { if (s.lat && s.lng) bounds.push([s.lat, s.lng]); });
       (trip.activities || []).forEach(a => { if (a.lat && a.lng) bounds.push([a.lat, a.lng]); });
 
@@ -3731,9 +3815,9 @@
       } else {
         const routeStops = (trip.route || trip.title || "").split(/➔|->|,/).map(s => s.trim()).filter(Boolean);
         const destination = routeStops[routeStops.length - 1] || routeStops[0] || trip.title;
-        const geo = await geocodePlace(destination);
+        const geo = await geocodePlace(destination, tripContext);
         if (geo) {
-          map.setView([geo.lat, geo.lng], 10);
+          map.setView([geo.lat, geo.lng], 11);
         } else {
           map.setView([20.0, 0.0], 2);
         }
