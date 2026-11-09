@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>TravelPulse | Mexico Tour 2027</title>
 
+  <!-- Prevent Aggressive iOS Home Screen Caching on GitHub Deployments -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <!-- iOS Web App & Web Clip Configuration -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -663,6 +668,17 @@
 
       <div id="hubTripsList" class="space-y-3">
         <!-- Rendered by JS -->
+      </div>
+
+      <!-- In-App Force Refresh & Version Info for Installed iPhone Home Screen App -->
+      <div class="p-3 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-2 text-ios-gray">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-ios-teal"></i>
+          <span>App Version: <strong id="hubAppVersionBadge" class="text-white font-mono">v10.2</strong></span>
+        </div>
+        <button onclick="forceReloadAppFromNetwork()" class="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white font-semibold text-[11px] transition">
+          Force Refresh
+        </button>
       </div>
 
       <div class="grid grid-cols-2 gap-2.5 pt-2">
@@ -2277,10 +2293,22 @@
     </div>
   </div>
 
+  <!-- FLOATING UPDATE AVAILABLE PILL (PWA / STANDALONE MODE) -->
+  <div id="pwaUpdateBanner" class="fixed top-16 inset-x-4 max-w-xs mx-auto z-50 hidden">
+    <button onclick="forceReloadAppFromNetwork()" class="w-full py-2.5 px-4 rounded-full bg-ios-teal text-black font-bold text-xs flex items-center justify-between shadow-glow-teal active:scale-95 transition">
+      <span class="flex items-center space-x-1.5">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+        <span>New Update Deployed</span>
+      </span>
+      <span class="underline text-[11px]">Tap to Reload ↻</span>
+    </button>
+  </div>
+
   <!-- ==================== JAVASCRIPT APPLICATION CORE ==================== -->
   <script>
-    // State Store Version
-    const APP_STORAGE_KEY = "TRAVEL_PULSE_DATA_V9_MEXICO";
+    // State Store Version & Deployment Stamp
+    const APP_STORAGE_KEY = "TRAVEL_PULSE_DATA_V10_MEXICO";
+    const APP_BUILD_VERSION = "v10.2-" + Date.now();
 
     // Default Seed Data
     const DEFAULT_SEED_DATA = {
@@ -2817,6 +2845,43 @@
         return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
       } catch (e) {
         return "";
+      }
+    }
+
+    // Force reload helper for standalone iOS Home Screen PWA
+    function forceReloadAppFromNetwork() {
+      showToast("Fetching latest version from GitHub...", true);
+      setTimeout(() => {
+        // Append unique cache-busting timestamp query parameter
+        const url = new URL(window.location.href);
+        url.searchParams.set("v", Date.now());
+        window.location.replace(url.toString());
+      }, 350);
+    }
+
+    // Check for new deployment on server
+    async function checkForDeploymentUpdates() {
+      try {
+        // HEAD request to detect modified HTML from GitHub Pages
+        const resp = await fetch(window.location.pathname, {
+          method: "HEAD",
+          cache: "no-store"
+        });
+        const serverEtag = resp.headers.get("etag") || resp.headers.get("last-modified");
+        const storedEtag = sessionStorage.getItem("TRAVEL_PULSE_LAST_ETAG");
+
+        if (serverEtag) {
+          if (storedEtag && storedEtag !== serverEtag) {
+            const banner = document.getElementById("pwaUpdateBanner");
+            if (banner) {
+              banner.classList.remove("hidden");
+              lucide.createIcons();
+            }
+          }
+          sessionStorage.setItem("TRAVEL_PULSE_LAST_ETAG", serverEtag);
+        }
+      } catch (e) {
+        console.warn("Update check skipped:", e);
       }
     }
 
@@ -5727,6 +5792,20 @@
       initWheelPickerColumns();
       renderAllViews();
       initInteractiveMap();
+
+      // Check if GitHub has deployed a newer version
+      checkForDeploymentUpdates();
+
+      // Set version in Trips Hub
+      const verBadge = document.getElementById("hubAppVersionBadge");
+      if (verBadge) verBadge.innerText = APP_BUILD_VERSION.split("-")[0];
+    });
+
+    // Check again when the app is brought from background into foreground
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        checkForDeploymentUpdates();
+      }
     });
   </script>
 </body>
