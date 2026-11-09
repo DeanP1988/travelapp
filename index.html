@@ -2026,7 +2026,7 @@
       <div class="p-5 rounded-2xl bg-ios-surfaceHigh border border-white/10 text-center space-y-1">
         <span class="text-[10px] font-bold text-ios-gray uppercase tracking-widest">Your Trip Invite Code</span>
         <div id="shareCodeDisplay" class="text-3xl font-black font-mono tracking-widest text-ios-teal py-1">MEX-74X</div>
-        <p class="text-[11px] text-gray-400">Anyone with this code can add this trip and view changes.</p>
+        <p class="text-[11px] text-gray-400">Anyone with this code or sync bundle can add this trip and view changes.</p>
       </div>
 
       <div class="grid grid-cols-2 gap-2">
@@ -2039,6 +2039,11 @@
           <span>Copy Invite Msg</span>
         </button>
       </div>
+
+      <button onclick="copyTripFullBundle()" class="w-full h-11 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-ios-teal font-bold text-xs flex items-center justify-center space-x-1.5 transition">
+        <i data-lucide="cloud-download" class="w-4 h-4"></i>
+        <span>Copy Full Sync Bundle (To Paste on iPhone)</span>
+      </button>
     </div>
   </div>
 
@@ -5443,6 +5448,191 @@
       renderChecklistsTab();
     }
 
+    // ==================== SHARE & JOIN TRIP LOGIC ====================
+    function openShareTripSheet() {
+      const trip = getActiveTrip();
+      if (!trip) return;
+      const codeDisplay = document.getElementById("shareCodeDisplay");
+      if (codeDisplay) codeDisplay.innerText = trip.inviteCode || "MEX-74X";
+      openBottomSheet("sheetShareTrip");
+    }
+
+    function createTripSyncPayload(trip) {
+      try {
+        const minimal = {
+          title: trip.title,
+          route: trip.route,
+          startDate: trip.startDate,
+          endDate: trip.endDate,
+          budgetCap: trip.budgetCap,
+          inviteCode: trip.inviteCode,
+          companions: trip.companions,
+          budgetShares: trip.budgetShares,
+          flights: trip.flights || [],
+          stays: trip.stays || [],
+          transports: trip.transports || [],
+          activities: trip.activities || [],
+          tasks: trip.tasks || []
+        };
+        return "TP1:" + btoa(unescape(encodeURIComponent(JSON.stringify(minimal))));
+      } catch (err) {
+        console.error("Payload creation error:", err);
+        return trip.inviteCode;
+      }
+    }
+
+    function decodeTripSyncPayload(encodedStr) {
+      if (!encodedStr) return null;
+      try {
+        let cleaned = encodedStr.trim();
+        if (cleaned.startsWith("TP1:")) {
+          cleaned = cleaned.substring(4);
+        }
+        const jsonStr = decodeURIComponent(escape(atob(cleaned)));
+        const parsed = JSON.parse(jsonStr);
+        if (parsed && parsed.title && parsed.startDate) {
+          return parsed;
+        }
+      } catch (e) {
+        console.warn("Could not decode trip payload as base64 bundle:", e);
+      }
+      return null;
+    }
+
+    function copyToClipboardFallback(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand("copy");
+        showToast("Copied to clipboard!");
+      } catch (err) {
+        showToast("Please copy text manually", false);
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function copyTripCodeOnly() {
+      const trip = getActiveTrip();
+      copyToClipboardFallback(trip.inviteCode || "MEX-74X");
+    }
+
+    function copyTripInviteMessage() {
+      const trip = getActiveTrip();
+      const bundle = createTripSyncPayload(trip);
+      const msg = `Join my holiday "${trip.title}" (${formatDateFriendly(trip.startDate)} - ${formatDateFriendly(trip.endDate)}) on TravelPulse!\n\nInvite Code: ${trip.inviteCode}\n\nSync Bundle:\n${bundle}`;
+      copyToClipboardFallback(msg);
+    }
+
+    function copyTripFullBundle() {
+      const trip = getActiveTrip();
+      const bundle = createTripSyncPayload(trip);
+      copyToClipboardFallback(bundle);
+    }
+
+    function handleJoinTripSubmit() {
+      const input = document.getElementById("inputJoinCode");
+      const codeOrPayload = (input?.value || "").trim();
+
+      if (!codeOrPayload) {
+        showToast("Please enter an invite code or sync bundle!", false);
+        return;
+      }
+
+      // Check 1: Is it a full portable sync bundle payload?
+      const decodedTrip = decodeTripSyncPayload(codeOrPayload);
+      if (decodedTrip) {
+        const newTrip = {
+          ...decodedTrip,
+          id: "trip_" + Date.now(),
+          inviteCode: decodedTrip.inviteCode || (decodedTrip.title.substring(0, 3).toUpperCase() + "-" + Math.random().toString(36).substring(2, 5).toUpperCase())
+        };
+
+        // If a trip with this code already exists, update it; otherwise append
+        const existingIdx = state.trips.findIndex(t => t.inviteCode && t.inviteCode.toUpperCase() === newTrip.inviteCode.toUpperCase());
+        if (existingIdx >= 0) {
+          state.trips[existingIdx] = { ...state.trips[existingIdx], ...newTrip };
+          state.activeTripId = state.trips[existingIdx].id;
+        } else {
+          state.trips.push(newTrip);
+          state.activeTripId = newTrip.id;
+        }
+
+        saveState();
+        input.value = "";
+        closeBottomSheet("sheetJoinTrip");
+        closeBottomSheet("sheetHolidayHub");
+        renderAllViews();
+        recenterMap();
+        showToast(`Imported & Synced "${newTrip.title}"!`);
+        return;
+      }
+
+      // Check 2: Match against standard 6-8 char code in current stored trips
+      const normalizedCode = codeOrPayload.toUpperCase();
+      const matchedTrip = state.trips.find(t => (t.inviteCode || "").toUpperCase() === normalizedCode);
+
+      if (matchedTrip) {
+        state.activeTripId = matchedTrip.id;
+        saveState();
+        input.value = "";
+        closeBottomSheet("sheetJoinTrip");
+        closeBottomSheet("sheetHolidayHub");
+        renderAllViews();
+        recenterMap();
+        showToast(`Joined trip "${matchedTrip.title}"!`);
+        return;
+      }
+
+      // Check 3: Check against the default seed trip
+      const seedTrip = DEFAULT_SEED_DATA.trips.find(t => (t.inviteCode || "").toUpperCase() === normalizedCode);
+      if (seedTrip) {
+        const cloned = JSON.parse(JSON.stringify(seedTrip));
+        cloned.id = "trip_" + Date.now();
+        state.trips.push(cloned);
+        state.activeTripId = cloned.id;
+        saveState();
+        input.value = "";
+        closeBottomSheet("sheetJoinTrip");
+        closeBottomSheet("sheetHolidayHub");
+        renderAllViews();
+        recenterMap();
+        showToast(`Restored "${cloned.title}"!`);
+        return;
+      }
+
+      showToast("Trip code not recognized. Try pasting the Full Sync Bundle.", false);
+    }
+
+    function checkUrlForTripJoin() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const joinPayload = params.get("join");
+        if (joinPayload) {
+          const decoded = decodeTripSyncPayload(joinPayload);
+          if (decoded) {
+            const newTrip = {
+              ...decoded,
+              id: "trip_" + Date.now()
+            };
+            state.trips.push(newTrip);
+            state.activeTripId = newTrip.id;
+            saveState();
+            renderAllViews();
+            showToast(`Loaded shared trip: ${newTrip.title}!`);
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        }
+      } catch (e) {
+        console.warn("URL join check error:", e);
+      }
+    }
+
     function handleSaveTask(e) {
       e.preventDefault();
       const trip = getActiveTrip();
@@ -5790,6 +5980,7 @@
     window.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
       initWheelPickerColumns();
+      checkUrlForTripJoin();
       renderAllViews();
       initInteractiveMap();
 
