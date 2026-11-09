@@ -396,12 +396,9 @@
         </div>
       </div>
 
-      <!-- City Filter Bar -->
+      <!-- City Filter Bar (Dynamic: blank until activities with cities are added) -->
       <div id="activityCityFilterBar" class="flex items-center space-x-1.5 overflow-x-auto ios-scroll py-0.5">
-        <button onclick="setActivityCityFilter('all')" class="act-city-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-black shrink-0 transition" data-city="all">All Stops</button>
-        <button onclick="setActivityCityFilter('Mexico City')" class="act-city-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-ios-surface text-white border border-white/10 shrink-0 transition" data-city="Mexico City">Mexico City</button>
-        <button onclick="setActivityCityFilter('Oaxaca')" class="act-city-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-ios-surface text-white border border-white/10 shrink-0 transition" data-city="Oaxaca">Oaxaca</button>
-        <button onclick="setActivityCityFilter('Tulum')" class="act-city-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-ios-surface text-white border border-white/10 shrink-0 transition" data-city="Tulum">Tulum / Riviera Maya</button>
+        <!-- Rendered dynamically by renderActivityCityFilterBar() -->
       </div>
 
       <!-- Activities Card Grid -->
@@ -768,12 +765,8 @@
       </div>
 
       <div class="space-y-2">
-        <label class="text-[10px] font-bold text-ios-gray uppercase">Select Destination Stop</label>
-        <select id="aiActFinderCity" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-          <option value="Mexico City">Mexico City</option>
-          <option value="Oaxaca">Oaxaca</option>
-          <option value="Tulum">Tulum / Riviera Maya</option>
-        </select>
+        <label class="text-[10px] font-bold text-ios-gray uppercase">Destination City</label>
+        <input type="text" id="aiActFinderCity" placeholder="e.g. Mexico City, Oaxaca, Tulum..." class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
       </div>
 
       <div class="space-y-2">
@@ -819,12 +812,8 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Destination City</label>
-            <select id="manualActCity" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-              <option value="Mexico City">Mexico City</option>
-              <option value="Oaxaca">Oaxaca</option>
-              <option value="Tulum">Tulum</option>
-            </select>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">City</label>
+            <input type="text" id="manualActCity" required placeholder="e.g. Mexico City" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Category</label>
@@ -1215,6 +1204,106 @@
 
         <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
           Save Flight
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SHEET 7B: EDIT FLIGHT -->
+  <div id="sheetEditFlight" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
+    <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
+      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white">Edit Flight</h3>
+          <p class="text-[11px] text-ios-gray">Update boarding pass and ticket details</p>
+        </div>
+        <button onclick="closeBottomSheet('sheetEditFlight')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveEditedFlight(event)" class="space-y-3">
+        <input type="hidden" id="editFlightId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Airline</label>
+            <input type="text" id="editFlightAirline" required placeholder="Aeroméxico" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Flight Number</label>
+            <input type="text" id="editFlightNum" required placeholder="AM 2044" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white uppercase font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Origin (IATA)</label>
+            <input type="text" id="editFlightFrom" required placeholder="MEX" maxlength="4" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white uppercase font-mono font-bold text-center">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Destination (IATA)</label>
+            <input type="text" id="editFlightTo" required placeholder="OAX" maxlength="4" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white uppercase font-mono font-bold text-center">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Departure Time (5m step)</label>
+            <div class="relative w-full">
+              <input type="text" id="editFlightDepTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editFlightDepTime', true)">
+              <button type="button" onclick="openIosWheelTimePicker('editFlightDepTime', true)" class="absolute right-3 top-3.5 text-ios-blue">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Arrival Time (5m step)</label>
+            <div class="relative w-full">
+              <input type="text" id="editFlightArrTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editFlightArrTime', true)">
+              <button type="button" onclick="openIosWheelTimePicker('editFlightArrTime', true)" class="absolute right-3 top-3.5 text-ios-blue">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Terminal</label>
+            <input type="text" id="editFlightTerminal" placeholder="T2" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Gate</label>
+            <input type="text" id="editFlightGate" placeholder="B14" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Seat</label>
+            <input type="text" id="editFlightSeat" placeholder="12A" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">PNR / Ref #</label>
+            <input type="text" id="editFlightConf" placeholder="6Q8KZ" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono uppercase">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Total Cost ($ AUD)</label>
+            <input type="number" id="editFlightCost" required placeholder="320" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Paid By</label>
+            <select id="editFlightPayer" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="Dean">Dean</option>
+              <option value="Hannah">Hannah</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
+          Save Changes
         </button>
       </form>
     </div>
@@ -3022,18 +3111,39 @@
       renderDetailedTimeline();
     }
 
+    function parseLocalDate(dateStr) {
+      if (!dateStr) return new Date();
+      const parts = dateStr.split("T")[0].split("-");
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      }
+      return new Date(dateStr);
+    }
+
+    function formatLocalDateKey(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
     function getTripDayDates() {
       const trip = getActiveTrip();
       const dates = [];
       try {
-        const start = new Date(trip.startDate + "T00:00:00");
-        const end = new Date(trip.endDate + "T00:00:00");
+        const start = parseLocalDate(trip.startDate);
+        const end = parseLocalDate(trip.endDate);
+
+        // Normalize time elements so day calculations are exact
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+
         let cur = new Date(start);
         let index = 1;
         while (cur <= end) {
           dates.push({
             dayIndex: index,
-            dateStr: cur.toISOString().split("T")[0]
+            dateStr: formatLocalDateKey(cur)
           });
           cur.setDate(cur.getDate() + 1);
           index++;
@@ -3200,7 +3310,7 @@
 
       // Filter by day if selected
       if (scheduleDayFilter !== "all") {
-        const targetDay = days.find(d => d.dayIndex == scheduleDayFilter);
+        const targetDay = days.find(d => String(d.dayIndex) === String(scheduleDayFilter));
         if (targetDay) {
           events = events.filter(e => e.dateStr === targetDay.dateStr);
         }
@@ -3277,14 +3387,37 @@
     // ==================== ACTIVITIES TAB ====================
     function setActivityCityFilter(city) {
       activityCityFilter = city;
-      document.querySelectorAll(".act-city-chip").forEach(btn => {
-        if (btn.getAttribute("data-city") === city) {
-          btn.className = "act-city-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-black shrink-0 transition";
-        } else {
-          btn.className = "act-city-chip px-3 py-1.5 rounded-full text-xs font-semibold bg-ios-surface text-white border border-white/10 shrink-0 transition";
-        }
-      });
+      renderActivityCityFilterBar();
       renderActivitiesList();
+    }
+
+    function renderActivityCityFilterBar() {
+      const trip = getActiveTrip();
+      const container = document.getElementById("activityCityFilterBar");
+      if (!container) return;
+
+      const activities = trip.activities || [];
+      // Extract unique non-empty cities from existing activities
+      const uniqueCities = Array.from(new Set(
+        activities.map(a => (a.city || "").trim()).filter(Boolean)
+      )).sort();
+
+      // If no activities or cities have been added yet, leave the stops filter empty
+      if (uniqueCities.length === 0) {
+        container.innerHTML = "";
+        return;
+      }
+
+      // Check if current filter is valid among available cities
+      if (activityCityFilter !== "all" && !uniqueCities.includes(activityCityFilter)) {
+        activityCityFilter = "all";
+      }
+
+      container.innerHTML = `
+        <button onclick="setActivityCityFilter('all')" class="act-city-chip px-3 py-1.5 rounded-full text-xs font-semibold ${activityCityFilter === 'all' ? 'bg-white text-black' : 'bg-ios-surface text-white border border-white/10'} shrink-0 transition" data-city="all">All Stops</button>
+      ` + uniqueCities.map(city => `
+        <button onclick="setActivityCityFilter('${escapeQuotes(city)}')" class="act-city-chip px-3 py-1.5 rounded-full text-xs font-semibold ${activityCityFilter === city ? 'bg-white text-black' : 'bg-ios-surface text-white border border-white/10'} shrink-0 transition" data-city="${escapeQuotes(city)}">${city}</button>
+      `).join("");
     }
 
     function renderActivitiesList() {
@@ -3292,9 +3425,11 @@
       const container = document.getElementById("activitiesListContainer");
       if (!container) return;
 
+      renderActivityCityFilterBar();
+
       let list = trip.activities || [];
       if (activityCityFilter !== "all") {
-        list = list.filter(a => (a.city || "").toLowerCase().includes(activityCityFilter.toLowerCase()));
+        list = list.filter(a => (a.city || "").trim().toLowerCase() === activityCityFilter.trim().toLowerCase());
       }
 
       if (list.length === 0) {
@@ -3352,7 +3487,7 @@
       e.preventDefault();
       const trip = getActiveTrip();
       const title = document.getElementById("manualActTitle").value.trim();
-      const city = document.getElementById("manualActCity").value;
+      const city = document.getElementById("manualActCity").value.trim();
       const category = document.getElementById("manualActCategory").value;
       const distanceFromCentre = document.getElementById("manualActDist").value.trim();
       const approxDuration = document.getElementById("manualActDuration").value.trim();
@@ -3376,6 +3511,15 @@
         notes
       });
 
+      // Clear input fields
+      document.getElementById("manualActTitle").value = "";
+      document.getElementById("manualActCity").value = "";
+      document.getElementById("manualActDist").value = "";
+      document.getElementById("manualActDuration").value = "";
+      document.getElementById("manualActCost").value = "";
+      document.getElementById("manualActUrl").value = "";
+      document.getElementById("manualActNotes").value = "";
+
       saveState();
       closeBottomSheet("sheetAddActivityManual");
       renderAllViews();
@@ -3383,11 +3527,18 @@
     }
 
     function openAiActivityFinderModal() {
+      // Pre-fill with first existing city or blank
+      const trip = getActiveTrip();
+      const existingCities = (trip.activities || []).map(a => (a.city || "").trim()).filter(Boolean);
+      const cityInput = document.getElementById("aiActFinderCity");
+      if (cityInput && !cityInput.value) {
+        cityInput.value = existingCities[0] || "";
+      }
       openBottomSheet("sheetAiActivityFinder");
     }
 
     async function performAiActivityDiscovery() {
-      const city = document.getElementById("aiActFinderCity").value;
+      const city = document.getElementById("aiActFinderCity").value.trim() || "Mexico City";
       const cat = document.getElementById("aiActFinderCat").value;
       const btn = document.getElementById("btnFindAiActivities");
       const resultsContainer = document.getElementById("aiActivityResults");
@@ -3732,7 +3883,11 @@
               </div>
             </div>
 
-            <div class="flex justify-end pt-1">
+            <div class="flex items-center justify-between pt-1 border-t border-white/5">
+              <button onclick="promptEditFlight('${f.id}')" class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
+                <i data-lucide="pencil" class="w-3.5 h-3.5 text-ios-teal"></i>
+                <span>Edit Flight</span>
+              </button>
               <button onclick="removeFlight('${f.id}')" class="text-xs text-ios-red hover:underline">Remove Flight</button>
             </div>
           </div>
@@ -3740,6 +3895,61 @@
       }).join("");
 
       lucide.createIcons();
+    }
+
+    function promptEditFlight(flightId) {
+      const trip = getActiveTrip();
+      const flight = (trip.flights || []).find(f => f.id === flightId);
+      if (!flight) return;
+
+      document.getElementById("editFlightId").value = flight.id;
+      document.getElementById("editFlightAirline").value = flight.airline || "";
+      document.getElementById("editFlightNum").value = flight.flightNum || "";
+      document.getElementById("editFlightFrom").value = flight.from || "";
+      document.getElementById("editFlightTo").value = flight.to || "";
+      document.getElementById("editFlightDepTime").value = flight.departureTime || "";
+      document.getElementById("editFlightArrTime").value = flight.arrivalTime || "";
+      document.getElementById("editFlightTerminal").value = flight.terminal || "";
+      document.getElementById("editFlightGate").value = flight.gate || "";
+      document.getElementById("editFlightSeat").value = flight.seat || "";
+      document.getElementById("editFlightConf").value = flight.conf || "";
+      document.getElementById("editFlightCost").value = flight.cost !== undefined ? flight.cost : 0;
+
+      // Populate companion options dynamically for edit flight payer
+      const payerSelect = document.getElementById("editFlightPayer");
+      if (payerSelect) {
+        const companions = trip.companions && trip.companions.length > 0 ? trip.companions : ["Dean", "Hannah"];
+        payerSelect.innerHTML = companions.map(c => `<option value="${c}">${c}</option>`).join("");
+        payerSelect.value = flight.paidBy || companions[0];
+      }
+
+      openBottomSheet("sheetEditFlight");
+    }
+
+    function handleSaveEditedFlight(e) {
+      e.preventDefault();
+      const trip = getActiveTrip();
+      const flightId = document.getElementById("editFlightId").value;
+      const flight = (trip.flights || []).find(f => f.id === flightId);
+      if (!flight) return;
+
+      flight.airline = document.getElementById("editFlightAirline").value.trim();
+      flight.flightNum = document.getElementById("editFlightNum").value.trim();
+      flight.from = document.getElementById("editFlightFrom").value.trim().toUpperCase();
+      flight.to = document.getElementById("editFlightTo").value.trim().toUpperCase();
+      flight.departureTime = document.getElementById("editFlightDepTime").value;
+      flight.arrivalTime = document.getElementById("editFlightArrTime").value;
+      flight.terminal = document.getElementById("editFlightTerminal").value.trim();
+      flight.gate = document.getElementById("editFlightGate").value.trim();
+      flight.seat = document.getElementById("editFlightSeat").value.trim();
+      flight.conf = document.getElementById("editFlightConf").value.trim().toUpperCase();
+      flight.cost = parseFloat(document.getElementById("editFlightCost").value) || 0;
+      flight.paidBy = document.getElementById("editFlightPayer").value;
+
+      saveState();
+      closeBottomSheet("sheetEditFlight");
+      renderAllViews();
+      showToast(`Updated flight: ${flight.airline} ${flight.flightNum}`);
     }
 
     function removeFlight(id) {
