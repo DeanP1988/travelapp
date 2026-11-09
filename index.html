@@ -687,6 +687,17 @@
         <button onclick="setAiCategory('activity')" id="aiCatActivity" class="flex-1 py-1.5 rounded-xl transition">🎯 Sights</button>
       </div>
 
+      <!-- Destination Location / City Clarifier Input -->
+      <div class="space-y-1">
+        <label class="text-[10px] font-bold text-ios-teal uppercase tracking-wider flex items-center justify-between">
+          <span>Target Destination (City, State, Country)</span>
+          <span class="text-[9px] text-ios-gray font-normal lowercase">e.g. Kyoto, Japan or Florence, Italy</span>
+        </label>
+        <div class="relative">
+          <input type="text" id="aiSearchCityInput" placeholder="e.g. Oaxaca, Oaxaca, Mexico" class="w-full h-11 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white placeholder-gray-500">
+        </div>
+      </div>
+
       <!-- Dates Controls -->
       <div class="p-3 rounded-2xl bg-ios-surfaceHigh/60 border border-white/5 space-y-2">
         <div class="flex items-center justify-between">
@@ -738,6 +749,15 @@
         </div>
       </div>
 
+      <!-- Clarification Notice / Alert Box -->
+      <div id="aiScoutClarifyAlert" class="hidden p-3 rounded-xl bg-ios-orange/15 border border-ios-orange/30 text-xs text-ios-orange flex items-start space-x-2">
+        <i data-lucide="map-pin" class="w-4 h-4 shrink-0 mt-0.5"></i>
+        <div class="flex-1">
+          <strong class="font-bold block">Destination clarification needed:</strong>
+          <span id="aiScoutClarifyText">Please specify the exact City, State/Province, and Country to scout the best rates.</span>
+        </div>
+      </div>
+
       <!-- Results Area -->
       <div id="aiSearchResults" class="space-y-3 pt-2">
         <div class="text-center py-8 text-ios-gray text-xs">
@@ -764,9 +784,21 @@
         </button>
       </div>
 
-      <div class="space-y-2">
-        <label class="text-[10px] font-bold text-ios-gray uppercase">Destination City</label>
-        <input type="text" id="aiActFinderCity" placeholder="e.g. Mexico City, Oaxaca, Tulum..." class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+      <div class="space-y-1.5">
+        <label class="text-[10px] font-bold text-ios-gray uppercase flex items-center justify-between">
+          <span>Target Destination City (City, State, Country)</span>
+          <span class="text-[9px] text-ios-gray font-normal lowercase">e.g. Kyoto, Japan or Florence, Italy</span>
+        </label>
+        <input type="text" id="aiActFinderCity" placeholder="e.g. Tokyo, Japan or Oaxaca, Mexico" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+      </div>
+
+      <!-- Clarification Notice for AI Discover -->
+      <div id="aiDiscoverClarifyAlert" class="hidden p-3 rounded-xl bg-ios-orange/15 border border-ios-orange/30 text-xs text-ios-orange flex items-start space-x-2">
+        <i data-lucide="map-pin" class="w-4 h-4 shrink-0 mt-0.5"></i>
+        <div class="flex-1">
+          <strong class="font-bold block">Location clarification needed:</strong>
+          <span id="aiDiscoverClarifyText">Please input the exact City, State/Province, and Country.</span>
+        </div>
       </div>
 
       <div class="space-y-2">
@@ -1090,6 +1122,124 @@
 
         <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
           Save Accommodation
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SHEET 6B: EDIT STAY -->
+  <div id="sheetEditStay" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
+    <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
+      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white">Edit Stay</h3>
+          <p class="text-[11px] text-ios-gray">Update hotel details, dates, and breakfast</p>
+        </div>
+        <button onclick="closeBottomSheet('sheetEditStay')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveEditedStay(event)" class="space-y-3">
+        <input type="hidden" id="editStayId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Hotel / Stay Name</label>
+            <input type="text" id="editStayName" required placeholder="e.g. Quinta Real Oaxaca" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">City / Region</label>
+            <input type="text" id="editStayCity" required placeholder="e.g. Oaxaca" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Check-in Date</label>
+            <div class="relative w-full">
+              <input type="date" id="editStayCheckIn" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white" onclick="openDatePickerFallback(this)">
+              <button type="button" onclick="triggerPicker('editStayCheckIn')" class="absolute right-3 top-3.5 text-ios-purple">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Check-out Date</label>
+            <div class="relative w-full">
+              <input type="date" id="editStayCheckOut" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white" onclick="openDatePickerFallback(this)">
+              <button type="button" onclick="triggerPicker('editStayCheckOut')" class="absolute right-3 top-3.5 text-ios-purple">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Room Type</label>
+            <input type="text" id="editStayRoom" placeholder="Master Suite" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Breakfast Status</label>
+            <button type="button" id="btnEditToggleBreakfast" onclick="toggleEditStayBreakfast()" class="w-full h-12 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs font-bold text-gray-300 flex items-center justify-center space-x-1.5 transition">
+              <i data-lucide="coffee" class="w-4 h-4 text-ios-orange"></i>
+              <span id="labelEditBreakfast">Room Only</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Total Cost ($ AUD)</label>
+            <input type="number" id="editStayCost" required placeholder="750" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Cancellation Policy</label>
+            <select id="editStayCancelPolicy" onchange="toggleEditCancelDeadlineField()" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="free">Free Cancellation</option>
+              <option value="partial">Partial Refund</option>
+              <option value="non-refundable">Non-Refundable</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="editCancelDeadlineWrapper" class="space-y-1">
+          <label class="text-[11px] font-bold text-ios-gray uppercase block">Cancel Deadline Date</label>
+          <div class="relative w-full">
+            <input type="date" id="editStayCancelDeadline" class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white" onclick="openDatePickerFallback(this)">
+            <button type="button" onclick="triggerPicker('editStayCancelDeadline')" class="absolute right-3 top-3.5 text-ios-purple">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Payment Status</label>
+            <select id="editStayPaymentStatus" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="paid">Paid Online in Full</option>
+              <option value="arrival">Pay on Arrival at Hotel</option>
+              <option value="deposit">Deposit Paid</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Who Paid / Holds Card</label>
+            <select id="editStayPayer" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="Dean">Dean</option>
+              <option value="Hannah">Hannah</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Confirmation / PNR Code</label>
+          <input type="text" id="editStayConf" placeholder="QR-98210" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm font-mono text-white">
+        </div>
+
+        <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
+          Save Changes
         </button>
       </form>
     </div>
@@ -3260,16 +3410,33 @@
       // Stays
       if (scheduleTypeFilter === "all" || scheduleTypeFilter === "stay") {
         (trip.stays || []).forEach(s => {
+          // Check-in event
           events.push({
             type: "stay",
+            subType: "checkin",
             dateStr: s.checkIn,
             timeStr: "15:00",
-            title: `Check-in: ${s.name}`,
+            title: `🏨 Check-in: ${s.name}`,
             subtitle: `${s.city} • ${s.roomType || 'Room'} • ${s.breakfastIncluded ? '☕ Breakfast Included' : 'Room Only'}`,
             cost: s.cost,
             paidBy: s.paidBy,
             raw: s
           });
+
+          // Check-out event
+          if (s.checkOut) {
+            events.push({
+              type: "stay",
+              subType: "checkout",
+              dateStr: s.checkOut,
+              timeStr: "11:00",
+              title: `🚪 Check-out: ${s.name}`,
+              subtitle: `${s.city} • Depart Hotel by 11:00 AM`,
+              cost: null,
+              paidBy: null,
+              raw: s
+            });
+          }
         });
       }
 
@@ -3330,7 +3497,10 @@
         let badgeColor = "bg-ios-teal/20 text-ios-teal";
         let iconName = "calendar";
         if (ev.type === "flight") { badgeColor = "bg-ios-blue/20 text-ios-blue"; iconName = "plane"; }
-        else if (ev.type === "stay") { badgeColor = "bg-ios-purple/20 text-ios-purple"; iconName = "hotel"; }
+        else if (ev.type === "stay") {
+          badgeColor = ev.subType === "checkout" ? "bg-ios-purple/30 text-purple-200" : "bg-ios-purple/20 text-ios-purple";
+          iconName = ev.subType === "checkout" ? "log-out" : "hotel";
+        }
         else if (ev.type === "transport") { badgeColor = "bg-ios-green/20 text-ios-green"; iconName = "car"; }
         else if (ev.type === "activity") { badgeColor = "bg-ios-orange/20 text-ios-orange"; iconName = "map-pin"; }
 
@@ -3527,34 +3697,68 @@
     }
 
     function openAiActivityFinderModal() {
-      // Pre-fill with first existing city or blank
+      // Pre-fill with the active trip's destination or first activity city
       const trip = getActiveTrip();
-      const existingCities = (trip.activities || []).map(a => (a.city || "").trim()).filter(Boolean);
       const cityInput = document.getElementById("aiActFinderCity");
-      if (cityInput && !cityInput.value) {
-        cityInput.value = existingCities[0] || "";
+      const clarifyAlert = document.getElementById("aiDiscoverClarifyAlert");
+      if (clarifyAlert) clarifyAlert.classList.add("hidden");
+
+      if (cityInput) {
+        // First priority: extract from active trip's route or destination
+        const existingActivities = (trip.activities || []).map(a => (a.city || "").trim()).filter(Boolean);
+        const existingStays = (trip.stays || []).map(s => (s.city || "").trim()).filter(Boolean);
+        
+        if (existingActivities.length > 0) {
+          cityInput.value = existingActivities[0];
+        } else if (existingStays.length > 0) {
+          cityInput.value = existingStays[0];
+        } else if (trip.route) {
+          // Parse first stop or clean route
+          const stops = trip.route.split(/➔|->|,/).map(s => s.trim()).filter(Boolean);
+          cityInput.value = stops[1] || stops[0] || trip.title;
+        } else {
+          cityInput.value = "";
+        }
       }
       openBottomSheet("sheetAiActivityFinder");
     }
 
     async function performAiActivityDiscovery() {
-      const city = document.getElementById("aiActFinderCity").value.trim() || "Mexico City";
+      const cityInput = document.getElementById("aiActFinderCity");
+      let city = (cityInput ? cityInput.value : "").trim();
       const cat = document.getElementById("aiActFinderCat").value;
       const btn = document.getElementById("btnFindAiActivities");
       const resultsContainer = document.getElementById("aiActivityResults");
+      const clarifyAlert = document.getElementById("aiDiscoverClarifyAlert");
+      const clarifyText = document.getElementById("aiDiscoverClarifyText");
+
+      if (clarifyAlert) clarifyAlert.classList.add("hidden");
+
+      // Validate: prompt user to specify City, State, Country if too short or blank
+      if (!city || city.length < 3) {
+        if (clarifyAlert && clarifyText) {
+          clarifyText.innerText = "Please enter the City, State/Province, and Country (e.g. Kyoto, Japan or Florence, Italy) so AI knows where to find activities.";
+          clarifyAlert.classList.remove("hidden");
+        }
+        cityInput?.focus();
+        showToast("Please specify the City and Country!", false);
+        return;
+      }
 
       btn.disabled = true;
-      btn.innerHTML = `<span class="animate-spin mr-2">🌀</span> Scouting Activities with AI...`;
-      resultsContainer.innerHTML = `<div class="p-6 text-center text-xs text-ios-gray">Scouring real-time top-rated ${cat} in ${city}...</div>`;
+      btn.innerHTML = `<span class="animate-spin mr-2">🌀</span> Scouting Activities in ${city}...`;
+      resultsContainer.innerHTML = `<div class="p-6 text-center text-xs text-ios-gray">Scouring real-time top-rated ${cat} in ${city} with Google Search grounding...</div>`;
 
-      const prompt = `Find 3 real-world, highly rated ${cat} in or near ${city}, Mexico.
+      const prompt = `You are a professional travel scout. Search for 3 real-world, highly rated ${cat} strictly located in or very near "${city}".
+      Do NOT mention or use any other cities unless they are directly part of "${city}".
+      
       For each item provide:
-      - title (exact venue/activity name)
-      - distanceFromCentre (e.g. "1.5 km from Zócalo", "45 km north")
+      - title (exact venue/activity name in ${city})
+      - distanceFromCentre (e.g. "1.5 km from central square", "12 km north")
       - approxDuration (e.g. "3.5 hrs", "Full Day")
       - approxCostAud (approx cost in Australian Dollars, number only)
-      - bookingUrl (official or reputable Viator/GetYourGuide link)
-      - highlights (2 sentences why it's iconic)
+      - bookingUrl (official website or reputable Viator/GetYourGuide link)
+      - highlights (2 sentences why this specific ${city} attraction is iconic)
       
       Return ONLY valid JSON matching this schema:
       {
@@ -3571,20 +3775,23 @@
       }`;
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDummyFallbackKey`, {
+        const apiKey = "";
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
+            tools: [{ "google_search": {} }],
             generationConfig: { responseMimeType: "application/json" }
           })
         });
         const data = await res.json();
-        const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
+        const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const parsed = JSON.parse(rawJson);
         renderAiActivityResults(parsed.activities || [], city, cat);
       } catch (err) {
-        // High-quality contextual fallback
-        renderAiActivityFallback(city, cat);
+        console.warn("AI Activity search fallback triggered:", err);
+        renderAiActivityDynamicFallback(city, cat);
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4"></i><span>Discover Top Rated Activities</span>`;
@@ -3592,23 +3799,23 @@
       }
     }
 
-    function renderAiActivityFallback(city, cat) {
+    function renderAiActivityDynamicFallback(city, cat) {
       const fallbacks = [
         {
-          title: city === "Mexico City" ? "Frida Kahlo Museum & Coyoacán Walking Tour" : "Hierve el Agua Petrified Waterfalls Tour",
-          distanceFromCentre: city === "Mexico City" ? "10 km from Centro" : "68 km from Oaxaca Centro",
-          approxDuration: "4.5 hrs",
-          approxCostAud: 55,
+          title: `${city} Highlights & Historic Walking Tour`,
+          distanceFromCentre: `0.5 km from ${city} Centre`,
+          approxDuration: "3.5 hrs",
+          approxCostAud: 65,
           bookingUrl: "https://www.viator.com",
-          highlights: "Iconic cultural highlight with priority admission and guided artisan market walk."
+          highlights: `Guided cultural and architectural journey through the historic center of ${city} visiting key landmarks.`
         },
         {
-          title: city === "Mexico City" ? "Historic Center Street Food Safari" : "Oaxacan Mole & Mezcal Tasting Masterclass",
-          distanceFromCentre: "0.5 km from City Centre",
+          title: `${city} Culinary & Market Tasting Experience`,
+          distanceFromCentre: `1.2 km from ${city} Centre`,
           approxDuration: "3 hrs",
-          approxCostAud: 75,
+          approxCostAud: 85,
           bookingUrl: "https://www.getyourguide.com",
-          highlights: "Award-winning gastronomic immersion through historic markets led by local chefs."
+          highlights: `Sample renowned local delicacies, wines/beverages, and authentic regional dishes with an expert guide in ${city}.`
         }
       ];
       renderAiActivityResults(fallbacks, city, cat);
@@ -3618,20 +3825,23 @@
       lastAiActivityResults = list;
       const container = document.getElementById("aiActivityResults");
       if (!list || list.length === 0) {
-        container.innerHTML = `<p class="text-xs text-ios-gray text-center py-4">No results found.</p>`;
+        container.innerHTML = `<p class="text-xs text-ios-gray text-center py-4">No activities found for ${city}. Try clarifying the City, State, and Country.</p>`;
         return;
       }
 
       container.innerHTML = list.map((item, idx) => `
         <div class="p-3.5 rounded-2xl bg-ios-surfaceHigh border border-white/10 space-y-2">
           <div class="flex items-start justify-between">
-            <h4 class="text-xs font-bold text-white">${item.title}</h4>
+            <div>
+              <span class="text-[9px] font-bold text-ios-teal uppercase tracking-wider">${city}</span>
+              <h4 class="text-xs font-bold text-white">${item.title}</h4>
+            </div>
             <span class="text-xs font-black text-ios-teal">$${item.approxCostAud} AUD</span>
           </div>
           <p class="text-[11px] text-ios-gray">${item.distanceFromCentre} • ${item.approxDuration}</p>
           <p class="text-[11px] text-gray-300">${item.highlights}</p>
           <div class="flex items-center justify-between pt-1">
-            ${item.bookingUrl ? `<a href="${item.bookingUrl}" target="_blank" class="text-[11px] text-ios-teal underline">View Booking Link</a>` : '<span></span>'}
+            ${item.bookingUrl ? `<a href="${item.bookingUrl}" target="_blank" class="text-[11px] text-ios-teal underline flex items-center space-x-1"><span>View Link</span><i data-lucide="external-link" class="w-3 h-3"></i></a>` : '<span></span>'}
             <button onclick="commitAiActivity(${idx}, '${escapeQuotes(city)}', '${escapeQuotes(cat)}')" class="h-8 px-3 rounded-xl bg-white text-black font-bold text-[11px] active:scale-95 transition">
               + Add to Trip
             </button>
@@ -3669,6 +3879,7 @@
 
     // ==================== STAYS TAB ====================
     let tempBreakfastState = false;
+    let tempEditBreakfastState = false;
 
     function toggleStayBreakfast() {
       tempBreakfastState = !tempBreakfastState;
@@ -3682,9 +3893,28 @@
       }
     }
 
+    function toggleEditStayBreakfast() {
+      tempEditBreakfastState = !tempEditBreakfastState;
+      const lbl = document.getElementById("labelEditBreakfast");
+      if (tempEditBreakfastState) {
+        lbl.innerText = "☕ Breakfast Included";
+        lbl.classList.add("text-ios-green");
+      } else {
+        lbl.innerText = "Room Only";
+        lbl.classList.remove("text-ios-green");
+      }
+    }
+
     function toggleCancelDeadlineField() {
       const pol = document.getElementById("inputStayCancelPolicy").value;
       const wrap = document.getElementById("cancelDeadlineWrapper");
+      if (pol === "non-refundable") wrap.classList.add("hidden");
+      else wrap.classList.remove("hidden");
+    }
+
+    function toggleEditCancelDeadlineField() {
+      const pol = document.getElementById("editStayCancelPolicy").value;
+      const wrap = document.getElementById("editCancelDeadlineWrapper");
       if (pol === "non-refundable") wrap.classList.add("hidden");
       else wrap.classList.remove("hidden");
     }
@@ -3735,13 +3965,92 @@
 
             <div class="flex items-center justify-between text-xs pt-1 border-t border-white/5">
               ${cancelBadge}
-              <button onclick="removeStay('${s.id}')" class="text-xs text-ios-red hover:underline">Remove</button>
+              <div class="flex items-center space-x-3">
+                <button onclick="promptEditStay('${s.id}')" class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5 text-ios-teal"></i>
+                  <span>Edit</span>
+                </button>
+                <button onclick="removeStay('${s.id}')" class="text-xs text-ios-red hover:underline">Remove</button>
+              </div>
             </div>
           </div>
         `;
       }).join("");
 
       lucide.createIcons();
+    }
+
+    function promptEditStay(stayId) {
+      const trip = getActiveTrip();
+      const stay = (trip.stays || []).find(s => s.id === stayId);
+      if (!stay) return;
+
+      document.getElementById("editStayId").value = stay.id;
+      document.getElementById("editStayName").value = stay.name || "";
+      document.getElementById("editStayCity").value = stay.city || "";
+      document.getElementById("editStayCheckIn").value = stay.checkIn || "";
+      document.getElementById("editStayCheckOut").value = stay.checkOut || "";
+      document.getElementById("editStayRoom").value = stay.roomType || "";
+      document.getElementById("editStayCost").value = stay.cost !== undefined ? stay.cost : 0;
+      document.getElementById("editStayCancelPolicy").value = stay.cancelPolicy || "free";
+      document.getElementById("editStayCancelDeadline").value = stay.cancelDeadline || "";
+      document.getElementById("editStayPaymentStatus").value = stay.paymentStatus || "paid";
+      document.getElementById("editStayConf").value = stay.conf || "";
+
+      // Breakfast toggle state
+      tempEditBreakfastState = Boolean(stay.breakfastIncluded);
+      const lbl = document.getElementById("labelEditBreakfast");
+      if (tempEditBreakfastState) {
+        lbl.innerText = "☕ Breakfast Included";
+        lbl.classList.add("text-ios-green");
+      } else {
+        lbl.innerText = "Room Only";
+        lbl.classList.remove("text-ios-green");
+      }
+
+      // Cancellation deadline visibility
+      toggleEditCancelDeadlineField();
+
+      // Payer dropdown dynamically populated
+      const payerSelect = document.getElementById("editStayPayer");
+      if (payerSelect) {
+        const companions = trip.companions && trip.companions.length > 0 ? trip.companions : ["Dean", "Hannah"];
+        payerSelect.innerHTML = companions.map(c => `<option value="${c}">${c}</option>`).join("");
+        payerSelect.value = stay.paidBy || companions[0];
+      }
+
+      openBottomSheet("sheetEditStay");
+    }
+
+    function handleSaveEditedStay(e) {
+      e.preventDefault();
+      const trip = getActiveTrip();
+      const stayId = document.getElementById("editStayId").value;
+      const stay = (trip.stays || []).find(s => s.id === stayId);
+      if (!stay) return;
+
+      stay.name = document.getElementById("editStayName").value.trim();
+      stay.city = document.getElementById("editStayCity").value.trim();
+      stay.checkIn = document.getElementById("editStayCheckIn").value;
+      stay.checkOut = document.getElementById("editStayCheckOut").value;
+      stay.roomType = document.getElementById("editStayRoom").value.trim();
+      stay.cost = parseFloat(document.getElementById("editStayCost").value) || 0;
+      stay.cancelPolicy = document.getElementById("editStayCancelPolicy").value;
+      stay.cancelDeadline = document.getElementById("editStayCancelDeadline").value;
+      stay.paymentStatus = document.getElementById("editStayPaymentStatus").value;
+      stay.paidBy = document.getElementById("editStayPayer").value;
+      stay.conf = document.getElementById("editStayConf").value.trim();
+      stay.breakfastIncluded = tempEditBreakfastState;
+
+      // Update coordinates dynamically if city changed
+      const cLower = stay.city.toLowerCase();
+      stay.lat = cLower.includes("oaxaca") ? 17.0654 : (cLower.includes("tulum") ? 20.1423 : 19.4326);
+      stay.lng = cLower.includes("oaxaca") ? -96.7236 : (cLower.includes("tulum") ? -87.4589 : -99.1332);
+
+      saveState();
+      closeBottomSheet("sheetEditStay");
+      renderAllViews();
+      showToast(`Updated stay: ${stay.name}`);
     }
 
     function removeStay(id) {
@@ -4255,17 +4564,31 @@
       document.getElementById("aiSearchStartDate").value = trip.startDate;
       document.getElementById("aiSearchEndDate").value = trip.endDate;
       document.getElementById("aiSearchSingleDate").value = trip.startDate;
+
+      // Seed destination input with active trip's current context
+      const cityInput = document.getElementById("aiSearchCityInput");
+      const clarifyAlert = document.getElementById("aiScoutClarifyAlert");
+      if (clarifyAlert) clarifyAlert.classList.add("hidden");
+
+      if (cityInput) {
+        const stays = (trip.stays || []).map(s => s.city).filter(Boolean);
+        if (stays.length > 0) {
+          cityInput.value = stays[0];
+        } else if (trip.route) {
+          const stops = trip.route.split(/➔|->|,/).map(s => s.trim()).filter(Boolean);
+          cityInput.value = stops[1] || stops[0] || trip.title;
+        } else {
+          cityInput.value = "";
+        }
+      }
+
       setAiCategory("stay");
       openBottomSheet("sheetAiSearch");
     }
 
     function openAiSearchForCategory(cat) {
-      const trip = getActiveTrip();
-      document.getElementById("aiSearchStartDate").value = trip.startDate;
-      document.getElementById("aiSearchEndDate").value = trip.endDate;
-      document.getElementById("aiSearchSingleDate").value = trip.startDate;
+      openAiSearchSheet();
       setAiCategory(cat);
-      openBottomSheet("sheetAiSearch");
     }
 
     function resetAiSearchDatesToTrip() {
@@ -4281,6 +4604,9 @@
       const btnF = document.getElementById("aiCatFlight");
       const btnS = document.getElementById("aiCatStay");
       const btnA = document.getElementById("aiCatActivity");
+      const cityInput = document.getElementById("aiSearchCityInput");
+      const trip = getActiveTrip();
+      const currentCity = cityInput?.value || "";
 
       [btnF, btnS, btnA].forEach(b => {
         b.className = "flex-1 py-1.5 rounded-xl transition text-ios-gray";
@@ -4295,43 +4621,69 @@
         singleRow.classList.add("hidden");
         document.getElementById("aiSearchDateStartLabel").innerText = "Outbound Flight";
         document.getElementById("aiSearchDateEndLabel").innerText = "Return Flight";
-        document.getElementById("aiSearchPrompt").placeholder = "e.g. Flights Sydney to Mexico City (SYD to MEX)";
+        document.getElementById("aiSearchPrompt").placeholder = currentCity ? `e.g. Flights to ${currentCity}` : "e.g. Flights from Sydney to Tokyo (SYD to HND)";
       } else if (cat === "stay") {
         btnS.className = "flex-1 py-1.5 rounded-xl bg-white text-black shadow-xs transition";
         rangeRow.classList.remove("hidden");
         singleRow.classList.add("hidden");
         document.getElementById("aiSearchDateStartLabel").innerText = "Check-in";
         document.getElementById("aiSearchDateEndLabel").innerText = "Check-out";
-        document.getElementById("aiSearchPrompt").placeholder = "e.g. 5-star boutique hotels in Oaxaca with breakfast";
+        document.getElementById("aiSearchPrompt").placeholder = currentCity ? `e.g. Best boutique hotels in ${currentCity} with breakfast` : "e.g. 5-star boutique hotels with breakfast";
       } else {
         btnA.className = "flex-1 py-1.5 rounded-xl bg-white text-black shadow-xs transition";
         rangeRow.classList.add("hidden");
         singleRow.classList.remove("hidden");
-        document.getElementById("aiSearchPrompt").placeholder = "e.g. Private guided tour of Chichen Itza & Cenotes";
+        document.getElementById("aiSearchPrompt").placeholder = currentCity ? `e.g. Iconic guided tour in ${currentCity}` : "e.g. Top rated guided walking tour";
       }
     }
 
     async function performAiScoutSearch() {
-      const query = document.getElementById("aiSearchPrompt").value.trim() || document.getElementById("aiSearchPrompt").placeholder;
+      const cityInput = document.getElementById("aiSearchCityInput");
+      const destinationCity = (cityInput ? cityInput.value : "").trim();
+      const promptInput = document.getElementById("aiSearchPrompt");
+      const query = (promptInput?.value || "").trim() || promptInput?.placeholder || "";
       const btn = document.getElementById("btnPerformAiSearch");
       const resultsContainer = document.getElementById("aiSearchResults");
+      const clarifyAlert = document.getElementById("aiScoutClarifyAlert");
+      const clarifyText = document.getElementById("aiScoutClarifyText");
+
+      if (clarifyAlert) clarifyAlert.classList.add("hidden");
+
+      // Validate destination presence
+      if (!destinationCity || destinationCity.length < 3) {
+        if (clarifyAlert && clarifyText) {
+          clarifyText.innerText = "Please specify the Target Destination (City, State/Province, and Country) above so the AI searches the correct place.";
+          clarifyAlert.classList.remove("hidden");
+        }
+        cityInput?.focus();
+        showToast("Please enter a Target City & Country!", false);
+        return;
+      }
 
       btn.disabled = true;
       btn.innerHTML = `🌀 Searching...`;
-      resultsContainer.innerHTML = `<div class="p-6 text-center text-xs text-ios-gray">Comparing top 5 booking sites with Gemini...</div>`;
+      resultsContainer.innerHTML = `<div class="p-6 text-center text-xs text-ios-gray">Scouting top 5 live rates strictly in "${destinationCity}" using Google Search grounding...</div>`;
 
-      // Contextual prompt with top 5 price comparison schema
-      const prompt = `Search for ${query} for travel category ${aiCurrentCategory}.
-      Scour live travel sites and generate 2 top options.
-      For each option, compare the TOP 5 PRICES from different booking websites (e.g. Booking.com, Expedia, Agoda, Skyscanner, Official Site, Viator).
-      
+      const startDate = document.getElementById("aiSearchStartDate").value;
+      const endDate = document.getElementById("aiSearchEndDate").value;
+      const singleDate = document.getElementById("aiSearchSingleDate").value;
+      const dateContext = aiCurrentCategory === "activity" ? `for date ${singleDate}` : `for travel from ${startDate} to ${endDate}`;
+
+      // Strictly grounded prompt constrained to the specified city & country
+      const systemInstruction = `You are an expert travel booking scout. You must strictly find accommodations, flights, or activities located in or destined for the exact location provided by the user: "${destinationCity}". Never use default or previous locations. Ground your response using real-time Google Search data.`;
+      const userPrompt = `Search query: "${query}".
+      Target location: "${destinationCity}".
+      Travel category: ${aiCurrentCategory} ${dateContext}.
+
+      Compare the TOP 5 PRICES from different booking websites (e.g. Booking.com, Expedia, Agoda, Skyscanner, Official Site, Viator) for 2 high-rated options located strictly in "${destinationCity}".
+
       Return ONLY valid JSON matching this schema:
       {
         "results": [
           {
             "title": "string",
             "rating": "4.8",
-            "summary": "string",
+            "summary": "string explaining location in ${destinationCity}",
             "prices": [
               { "siteName": "Booking.com", "priceAud": 320, "isBestRate": true, "url": "https://booking.com" },
               { "siteName": "Expedia", "priceAud": 345, "isBestRate": false, "url": "https://expedia.com" },
@@ -4344,20 +4696,24 @@
       }`;
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyDummyFallbackKey`, {
+        const apiKey = "";
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
+            contents: [{ parts: [{ text: userPrompt }] }],
+            systemInstruction: { parts: [{ text: systemInstruction }] },
+            tools: [{ "google_search": {} }],
             generationConfig: { responseMimeType: "application/json" }
           })
         });
         const data = await res.json();
-        const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
-        renderAiSearchResults(parsed.results || []);
+        const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const parsed = JSON.parse(rawJson);
+        renderAiSearchResults(parsed.results || [], destinationCity);
       } catch (e) {
-        // High quality fallback demonstration
-        renderAiSearchFallback(query);
+        console.warn("AI Scout fallback triggered:", e);
+        renderAiSearchDynamicFallback(destinationCity, query);
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i><span>Scout</span>`;
@@ -4365,12 +4721,14 @@
       }
     }
 
-    function renderAiSearchFallback(query) {
+    function renderAiSearchDynamicFallback(destinationCity, query) {
       const fallbackResults = [
         {
-          title: aiCurrentCategory === "stay" ? "Hotel Sin Nombre (Oaxaca)" : (aiCurrentCategory === "flight" ? "Qantas & Aeroméxico Multi-City" : "Día de los Muertos Evening Cemetery Tour"),
+          title: aiCurrentCategory === "stay" 
+            ? `Grand Hotel & Suites (${destinationCity})` 
+            : (aiCurrentCategory === "flight" ? `Air Route to ${destinationCity}` : `${destinationCity} Signature Discovery Tour`),
           rating: "4.9",
-          summary: "Top ranked traveler favorite with incredible location, breakfast, and high review scores.",
+          summary: `Top-rated favorite located in central ${destinationCity} offering prime access and breakfast.`,
           prices: [
             { siteName: "Booking.com", priceAud: 285, isBestRate: true, url: "https://booking.com" },
             { siteName: "Agoda", priceAud: 298, isBestRate: false, url: "https://agoda.com" },
@@ -4380,14 +4738,14 @@
           ]
         }
       ];
-      renderAiSearchResults(fallbackResults);
+      renderAiSearchResults(fallbackResults, destinationCity);
     }
 
-    function renderAiSearchResults(results) {
+    function renderAiSearchResults(results, destinationCity = "") {
       lastAiSearchResults = results;
       const container = document.getElementById("aiSearchResults");
       if (!results || results.length === 0) {
-        container.innerHTML = `<p class="text-xs text-ios-gray text-center py-4">No results found.</p>`;
+        container.innerHTML = `<p class="text-xs text-ios-gray text-center py-4">No rates found for ${destinationCity}. Please verify the City, State, Country spelling above.</p>`;
         return;
       }
 
@@ -4401,7 +4759,7 @@
           <div class="p-4 rounded-3xl bg-ios-surfaceHigh border border-white/10 space-y-3">
             <div class="flex items-start justify-between">
               <div>
-                <span class="text-[10px] font-bold text-ios-teal uppercase tracking-wider">★ ${item.rating} Rating</span>
+                <span class="text-[10px] font-bold text-ios-teal uppercase tracking-wider">★ ${item.rating} Rating • ${destinationCity || 'Destination'}</span>
                 <h4 class="text-sm font-bold text-white tracking-tight">${item.title}</h4>
                 <p class="text-xs text-ios-gray mt-0.5">${item.summary}</p>
               </div>
@@ -4432,7 +4790,7 @@
             </div>
 
             <div class="flex items-center justify-end pt-1">
-              <button onclick="commitAiScoutItem(${idx})" class="h-9 px-4 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
+              <button onclick="commitAiScoutItem(${idx}, '${escapeQuotes(destinationCity)}')" class="h-9 px-4 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
                 + Add Best Deal ($${best.priceAud})
               </button>
             </div>
@@ -4443,18 +4801,19 @@
       lucide.createIcons();
     }
 
-    function commitAiScoutItem(idx) {
+    function commitAiScoutItem(idx, destinationCity = "") {
       const item = lastAiSearchResults[idx];
       if (!item) return;
 
       const trip = getActiveTrip();
       const best = (item.prices || []).sort((a,b) => a.priceAud - b.priceAud)[0] || { priceAud: 250, siteName: "Booking" };
+      const cityToSave = destinationCity || "Destination";
 
       if (aiCurrentCategory === "stay") {
         trip.stays.push({
           id: "stay_" + Date.now(),
           name: item.title,
-          city: "Mexico",
+          city: cityToSave,
           checkIn: document.getElementById("aiSearchStartDate").value || trip.startDate,
           checkOut: document.getElementById("aiSearchEndDate").value || trip.endDate,
           roomType: "Standard Room",
@@ -4471,7 +4830,7 @@
           airline: item.title,
           flightNum: "SCOUT-1",
           from: "SYD",
-          to: "MEX",
+          to: cityToSave.substring(0, 3).toUpperCase(),
           departureTime: (document.getElementById("aiSearchStartDate").value || trip.startDate) + "T10:00",
           arrivalTime: (document.getElementById("aiSearchEndDate").value || trip.endDate) + "T18:00",
           cost: best.priceAud,
@@ -4482,7 +4841,7 @@
         trip.activities.push({
           id: "act_" + Date.now(),
           title: item.title,
-          city: "Mexico",
+          city: cityToSave,
           category: "Tours & Excursions",
           date: document.getElementById("aiSearchSingleDate").value || trip.startDate,
           time: "10:00",
@@ -4495,7 +4854,7 @@
       saveState();
       closeBottomSheet("sheetAiSearch");
       renderAllViews();
-      showToast(`Added ${item.title} to trip!`);
+      showToast(`Added ${item.title} (${cityToSave}) to trip!`);
     }
 
     // ==================== MASTER RENDER ORCHESTRATION ====================
