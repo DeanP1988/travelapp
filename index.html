@@ -197,7 +197,7 @@
         </button>
 
         <!-- Contextual Add Action (+) -->
-        <button id="btnContextualAdd" onclick="handleContextualAdd()" title="Add to current screen" class="w-8 h-8 rounded-full bg-white text-black active:scale-95 font-bold flex items-center justify-center transition shadow-sm">
+        <button id="btnContextualAdd" onclick="openQuickAddPicker()" title="Add to trip" class="w-8 h-8 rounded-full bg-white text-black active:scale-95 font-bold flex items-center justify-center transition shadow-sm">
           <i data-lucide="plus" class="w-4 h-4"></i>
         </button>
       </div>
@@ -399,6 +399,24 @@
       <!-- City Filter Bar (Dynamic: blank until activities with cities are added) -->
       <div id="activityCityFilterBar" class="flex items-center space-x-1.5 overflow-x-auto ios-scroll py-0.5">
         <!-- Rendered dynamically by renderActivityCityFilterBar() -->
+      </div>
+
+      <!-- Priority & Scheduling Status Filter Bars -->
+      <div class="space-y-1.5">
+        <!-- Priority Filter Bar -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto ios-scroll py-0.5">
+          <button onclick="setActivityPriorityFilter('all')" class="act-priority-chip px-3 py-1 rounded-full text-xs font-semibold bg-white text-black shrink-0 transition" data-priority="all">All Priorities</button>
+          <button onclick="setActivityPriorityFilter('Must-Do')" class="act-priority-chip px-3 py-1 rounded-full text-xs font-semibold bg-ios-surface text-ios-red border border-white/10 shrink-0 transition" data-priority="Must-Do">🔥 Must-Do</button>
+          <button onclick="setActivityPriorityFilter('Should-Do')" class="act-priority-chip px-3 py-1 rounded-full text-xs font-semibold bg-ios-surface text-ios-orange border border-white/10 shrink-0 transition" data-priority="Should-Do">✨ Should-Do</button>
+          <button onclick="setActivityPriorityFilter('Could-Do')" class="act-priority-chip px-3 py-1 rounded-full text-xs font-semibold bg-ios-surface text-ios-teal border border-white/10 shrink-0 transition" data-priority="Could-Do">💡 Could-Do</button>
+        </div>
+
+        <!-- Schedule Status Filter Bar -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto ios-scroll py-0.5">
+          <button onclick="setActivityScheduleStatusFilter('all')" class="act-status-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/20 text-white shrink-0 transition" data-status="all">All Items</button>
+          <button onclick="setActivityScheduleStatusFilter('scheduled')" class="act-status-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-ios-surface text-gray-400 border border-white/5 shrink-0 transition" data-status="scheduled">📅 Scheduled Only</button>
+          <button onclick="setActivityScheduleStatusFilter('optional')" class="act-status-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-ios-surface text-gray-400 border border-white/5 shrink-0 transition" data-status="optional">📌 Optional / Ideas</button>
+        </div>
       </div>
 
       <!-- Activities Card Grid -->
@@ -858,26 +876,53 @@
           </div>
         </div>
 
+        <!-- Priority & Scheduling Status Toggles -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Distance From City Centre</label>
-            <input type="text" id="manualActDist" placeholder="e.g. 9 km from Oaxaca Centre" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Priority</label>
+            <select id="manualActPriority" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-semibold">
+              <option value="Must-Do">🔥 Must-Do (Top Priority)</option>
+              <option value="Should-Do" selected>✨ Should-Do (Recommended)</option>
+              <option value="Could-Do">💡 Could-Do (Optional Idea)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Itinerary Status</label>
+            <!-- Interactive Segment Toggle for Add Activity -->
+            <input type="hidden" id="manualActIsScheduled" value="scheduled">
+            <div class="grid grid-cols-2 p-1 rounded-xl bg-ios-surfaceHigh border border-white/10 h-12 items-center">
+              <button type="button" id="btnManualSchedToggle" onclick="setAddActivityStatus('scheduled')" class="h-10 rounded-lg text-xs font-bold bg-white text-black transition flex items-center justify-center space-x-1 shadow-sm">
+                <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i>
+                <span>Scheduled</span>
+              </button>
+              <button type="button" id="btnManualOptToggle" onclick="setAddActivityStatus('optional')" class="h-10 rounded-lg text-xs font-bold text-ios-gray transition flex items-center justify-center space-x-1">
+                <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+                <span>Optional</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Distance from Centre</label>
+            <input type="text" id="manualActDist" placeholder="e.g. 5 km from Centro" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Approx. Duration</label>
-            <input type="text" id="manualActDuration" placeholder="e.g. 3.5 hrs" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="manualActDuration" placeholder="e.g. 3.5 hrs or Half Day" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Cost ($ AUD)</label>
-            <input type="number" id="manualActCost" placeholder="40" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="number" id="manualActCost" placeholder="0" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Date (Optional)</label>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Date</label>
             <div class="relative w-full">
-              <input type="date" id="manualActDate" class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white" onclick="openDatePickerFallback(this)">
+              <input type="date" id="manualActDate" class="w-full h-12 pl-3 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white" onclick="openDatePickerFallback(this)">
               <button type="button" onclick="triggerPicker('manualActDate')" class="absolute right-3 top-3.5 text-ios-teal">
                 <i data-lucide="calendar" class="w-4 h-4"></i>
               </button>
@@ -886,13 +931,13 @@
         </div>
 
         <div>
-          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Booking Website URL</label>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Booking Link / URL (Optional)</label>
           <input type="url" id="manualActUrl" placeholder="https://..." class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
         </div>
 
         <div>
-          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Highlights & Notes</label>
-          <textarea id="manualActNotes" rows="2" placeholder="Wear walking shoes, pre-book entry ticket..." class="w-full p-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white"></textarea>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Notes / Highlights</label>
+          <input type="text" id="manualActNotes" placeholder="Meeting point, what to bring..." class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
         </div>
 
         <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
@@ -902,14 +947,14 @@
     </div>
   </div>
 
-  <!-- SHEET 4B: EDIT ACTIVITY MANUAL -->
+  <!-- SHEET 5: EDIT ACTIVITY MANUAL -->
   <div id="sheetEditActivityManual" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
     <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
       <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-base font-bold text-white">Edit Activity</h3>
-          <p class="text-[11px] text-ios-gray">Update details, location distance & booking link</p>
+          <p class="text-[11px] text-ios-gray">Update title, priority, date and status</p>
         </div>
         <button onclick="closeBottomSheet('sheetEditActivityManual')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
           <i data-lucide="x" class="w-4 h-4"></i>
@@ -921,13 +966,13 @@
 
         <div>
           <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Activity Title</label>
-          <input type="text" id="editActTitle" required placeholder="e.g. Monte Albán Ruins Guided Tour" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          <input type="text" id="editActTitle" required class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">City</label>
-            <input type="text" id="editActCity" required placeholder="e.g. Mexico City" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="editActCity" required class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Category</label>
@@ -942,24 +987,49 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Distance From City Centre</label>
-            <input type="text" id="editActDist" placeholder="e.g. 9 km from Oaxaca Centre" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Priority</label>
+            <select id="editActPriority" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-semibold">
+              <option value="Must-Do">🔥 Must-Do (Top Priority)</option>
+              <option value="Should-Do">✨ Should-Do (Recommended)</option>
+              <option value="Could-Do">💡 Could-Do (Optional Idea)</option>
+            </select>
           </div>
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Approx. Duration</label>
-            <input type="text" id="editActDuration" placeholder="e.g. 3.5 hrs" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Itinerary Status</label>
+            <input type="hidden" id="editActIsScheduled" value="scheduled">
+            <div class="grid grid-cols-2 p-1 rounded-xl bg-ios-surfaceHigh border border-white/10 h-12 items-center">
+              <button type="button" id="btnEditSchedToggle" onclick="setEditActivityStatus('scheduled')" class="h-10 rounded-lg text-xs font-bold bg-white text-black transition flex items-center justify-center space-x-1 shadow-sm">
+                <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i>
+                <span>Scheduled</span>
+              </button>
+              <button type="button" id="btnEditOptToggle" onclick="setEditActivityStatus('optional')" class="h-10 rounded-lg text-xs font-bold text-ios-gray transition flex items-center justify-center space-x-1">
+                <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+                <span>Optional</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Distance from Centre</label>
+            <input type="text" id="editActDist" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Approx Duration</label>
+            <input type="text" id="editActDuration" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Cost ($ AUD)</label>
-            <input type="number" id="editActCost" placeholder="40" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="number" id="editActCost" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Date</label>
             <div class="relative w-full">
-              <input type="date" id="editActDate" class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white" onclick="openDatePickerFallback(this)">
+              <input type="date" id="editActDate" class="w-full h-12 pl-3 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white" onclick="openDatePickerFallback(this)">
               <button type="button" onclick="triggerPicker('editActDate')" class="absolute right-3 top-3.5 text-ios-teal">
                 <i data-lucide="calendar" class="w-4 h-4"></i>
               </button>
@@ -975,249 +1045,52 @@
         </div>
 
         <div>
-          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Booking Website URL</label>
-          <input type="url" id="editActUrl" placeholder="https://..." class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Booking Link / URL</label>
+          <input type="url" id="editActUrl" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
         </div>
 
         <div>
-          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Highlights & Notes</label>
-          <textarea id="editActNotes" rows="2" placeholder="Wear walking shoes, pre-book entry ticket..." class="w-full p-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white"></textarea>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Notes</label>
+          <input type="text" id="editActNotes" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
         </div>
 
         <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
-          Save Activity Changes
+          Save Changes
         </button>
       </form>
     </div>
   </div>
 
-  <!-- SHEET 5: ADD TRANSPORT BOOKING -->
-  <div id="sheetAddTransport" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
-    <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
-      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-base font-bold text-white">Add Transit Booking</h3>
-          <p class="text-[11px] text-ios-gray">Rental car, bus, train, or ferry</p>
-        </div>
-        <button onclick="closeBottomSheet('sheetAddTransport')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <form onsubmit="handleSaveTransport(event)" class="space-y-3">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Transit Type</label>
-            <select id="transInputType" onchange="updateTransportFormFields()" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-              <option value="car">Rental Car</option>
-              <option value="bus">Coach / Bus (ADO)</option>
-              <option value="train">Train / Tren Maya</option>
-              <option value="ferry">Ferry / Boat</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Company / Operator</label>
-            <input type="text" id="transInputOperator" required placeholder="e.g. Hertz, ADO Platino" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="transLabelPickupPlace">Pickup / Departure Point</label>
-            <input type="text" id="transInputPickupPlace" required placeholder="e.g. Cancun Airport (CUN)" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="transLabelDropoffPlace">Drop-off / Arrival Point</label>
-            <input type="text" id="transInputDropoffPlace" required placeholder="e.g. Tulum Beach Office" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="transLabelPickupDate">Pickup / Departure Time</label>
-            <div class="relative w-full">
-              <input type="text" id="transInputPickupTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('transInputPickupTime', true)">
-              <button type="button" onclick="openIosWheelTimePicker('transInputPickupTime', true)" class="absolute right-3 top-3.5 text-ios-teal">
-                <i data-lucide="clock" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="transLabelDropoffDate">Drop-off / Arrival Time</label>
-            <div class="relative w-full">
-              <input type="text" id="transInputDropoffTime" readonly placeholder="Select Date & 5-Min Time" class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('transInputDropoffTime', true)">
-              <button type="button" onclick="openIosWheelTimePicker('transInputDropoffTime', true)" class="absolute right-3 top-3.5 text-ios-teal">
-                <i data-lucide="clock" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">PNR / Ref #</label>
-            <input type="text" id="transInputRef" placeholder="e.g. HZ-99120" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono">
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Cost ($ AUD)</label>
-            <input type="number" id="transInputCost" required placeholder="240" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Paid By</label>
-            <select id="transInputPayer" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-              <option value="Dean">Dean</option>
-              <option value="Hannah">Hannah</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Booking Notes / Inclusions</label>
-          <input type="text" id="transInputNotes" placeholder="e.g. Compact SUV with full insurance and toll transponder" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-        </div>
-
-        <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
-          Save Transit Booking
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- SHEET 5B: EDIT TRANSPORT BOOKING -->
-  <div id="sheetEditTransport" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
-    <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
-      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-base font-bold text-white">Edit Transit Booking</h3>
-          <p class="text-[11px] text-ios-gray">Update rental car, bus, train, or ferry</p>
-        </div>
-        <button onclick="closeBottomSheet('sheetEditTransport')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <form onsubmit="handleSaveEditedTransport(event)" class="space-y-3">
-        <input type="hidden" id="editTransId">
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Transit Type</label>
-            <select id="editTransType" onchange="updateEditTransportFormFields()" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-              <option value="car">Rental Car</option>
-              <option value="bus">Coach / Bus (ADO)</option>
-              <option value="train">Train / Tren Maya</option>
-              <option value="ferry">Ferry / Boat</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Company / Operator</label>
-            <input type="text" id="editTransOperator" required placeholder="e.g. Hertz, ADO Platino" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="editTransLabelPickupPlace">Pickup / Departure Point</label>
-            <input type="text" id="editTransPickupPlace" required placeholder="e.g. Cancun Airport (CUN)" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="editTransLabelDropoffPlace">Drop-off / Arrival Point</label>
-            <input type="text" id="editTransDropoffPlace" required placeholder="e.g. Tulum Beach Office" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="editTransLabelPickupDate">Pickup / Departure Time</label>
-            <div class="relative w-full">
-              <input type="text" id="editTransPickupTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editTransPickupTime', true)">
-              <button type="button" onclick="openIosWheelTimePicker('editTransPickupTime', true)" class="absolute right-3 top-3.5 text-ios-teal">
-                <i data-lucide="clock" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1" id="editTransLabelDropoffDate">Drop-off / Arrival Time</label>
-            <div class="relative w-full">
-              <input type="text" id="editTransDropoffTime" readonly placeholder="Select Date & 5-Min Time" class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editTransDropoffTime', true)">
-              <button type="button" onclick="openIosWheelTimePicker('editTransDropoffTime', true)" class="absolute right-3 top-3.5 text-ios-teal">
-                <i data-lucide="clock" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">PNR / Ref #</label>
-            <input type="text" id="editTransRef" placeholder="e.g. HZ-99120" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono">
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Cost ($ AUD)</label>
-            <input type="number" id="editTransCost" required placeholder="240" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Paid By</label>
-            <select id="editTransPayer" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-              <option value="Dean">Dean</option>
-              <option value="Hannah">Hannah</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Booking Notes / Inclusions</label>
-          <input type="text" id="editTransNotes" placeholder="e.g. Compact SUV with full insurance and toll transponder" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
-        </div>
-
-        <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
-          Save Transit Changes
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- SHEET 6: ADD STAY (WITH AI SCREENSHOT SCANNER) -->
+  <!-- SHEET 6A: ADD STAY -->
   <div id="sheetAddStay" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
     <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
       <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-base font-bold text-white">Add Stay</h3>
-          <p class="text-[11px] text-ios-gray">Hotel, resort, or Airbnb</p>
+          <p class="text-[11px] text-ios-gray">Hotel, check-in & cancellation policies</p>
         </div>
         <button onclick="closeBottomSheet('sheetAddStay')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <!-- AI Screenshot Upload Banner -->
-      <div class="p-3.5 rounded-2xl bg-gradient-to-r from-ios-purple/15 to-ios-blue/15 border border-ios-purple/30 flex items-center justify-between">
-        <div class="space-y-0.5">
-          <span class="text-xs font-bold text-white flex items-center space-x-1">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-ios-purple"></i>
-            <span>Scan Booking Screenshot</span>
-          </span>
-          <p class="text-[10px] text-ios-gray">Auto-fills hotel, dates, breakfast & costs with AI</p>
-        </div>
-        <label class="h-8 px-3 rounded-xl bg-ios-purple text-white text-[11px] font-bold flex items-center space-x-1 cursor-pointer active:scale-95 transition">
-          <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-          <span>Scan Photo</span>
-          <input type="file" accept="image/*" class="hidden" onchange="handleAiStayScreenshot(event)">
-        </label>
-      </div>
+      <!-- Optional AI Stay Screenshot Scan Button -->
+      <label class="h-10 rounded-xl bg-ios-purple/15 border border-ios-purple/30 text-ios-purple font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 transition">
+        <i data-lucide="scan-line" class="w-4 h-4"></i>
+        <span>Scan Hotel Booking Screenshot (AI)</span>
+        <input type="file" accept="image/*" class="hidden" onchange="handleAiStayScreenshot(event)">
+      </label>
 
       <form onsubmit="handleSaveStay(event)" class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Hotel / Stay Name</label>
-            <input type="text" id="inputStayName" required placeholder="e.g. Quinta Real Oaxaca" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
+            <input type="text" id="inputStayName" required placeholder="e.g. Gran Hotel Ciudad de México" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
           </div>
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">City / Region</label>
-            <input type="text" id="inputStayCity" required placeholder="e.g. Oaxaca" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">City</label>
+            <input type="text" id="inputStayCity" required placeholder="e.g. Mexico City" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
           </div>
         </div>
 
@@ -1334,7 +1207,7 @@
             <input type="text" id="editStayName" required placeholder="e.g. Quinta Real Oaxaca" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
           </div>
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">City / Region</label>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">City</label>
             <input type="text" id="editStayCity" required placeholder="e.g. Oaxaca" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
           </div>
         </div>
@@ -1429,73 +1302,64 @@
     </div>
   </div>
 
-  <!-- SHEET 7: ADD FLIGHT (WITH AI SCREENSHOT SCANNER) -->
+  <!-- SHEET 7A: ADD FLIGHT -->
   <div id="sheetAddFlight" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
     <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
       <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-base font-bold text-white">Add Flight</h3>
-          <p class="text-[11px] text-ios-gray">Boarding pass & booking e-ticket</p>
+          <p class="text-[11px] text-ios-gray">Add boarding pass details & departure times</p>
         </div>
         <button onclick="closeBottomSheet('sheetAddFlight')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <!-- AI Screenshot Upload Banner -->
-      <div class="p-3.5 rounded-2xl bg-gradient-to-r from-ios-blue/15 to-ios-teal/15 border border-ios-blue/30 flex items-center justify-between">
-        <div class="space-y-0.5">
-          <span class="text-xs font-bold text-white flex items-center space-x-1">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-ios-teal"></i>
-            <span>Scan Boarding Pass / Ticket</span>
-          </span>
-          <p class="text-[10px] text-ios-gray">Extracts airline, route, 5m times, gate & seat</p>
-        </div>
-        <label class="h-8 px-3 rounded-xl bg-ios-blue text-white text-[11px] font-bold flex items-center space-x-1 cursor-pointer active:scale-95 transition">
-          <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-          <span>Scan Photo</span>
-          <input type="file" accept="image/*" class="hidden" onchange="handleAiFlightScreenshot(event)">
-        </label>
-      </div>
+      <!-- Optional AI Boarding Pass Scan Button -->
+      <label class="h-10 rounded-xl bg-ios-blue/15 border border-ios-blue/30 text-ios-blue font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 transition">
+        <i data-lucide="scan-line" class="w-4 h-4"></i>
+        <span>Scan Boarding Pass / Ticket Screenshot (AI)</span>
+        <input type="file" accept="image/*" class="hidden" onchange="handleAiFlightScreenshot(event)">
+      </label>
 
       <form onsubmit="handleSaveFlight(event)" class="space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Airline</label>
-            <input type="text" id="inputFlightAirline" required placeholder="Aeroméxico" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="inputFlightAirline" required placeholder="e.g. Qantas or Volaris" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Flight Number</label>
-            <input type="text" id="inputFlightNum" required placeholder="AM 2044" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white uppercase font-mono">
+            <input type="text" id="inputFlightNum" required placeholder="e.g. QF 3" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white uppercase font-mono">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Origin (IATA)</label>
-            <input type="text" id="inputFlightFrom" required placeholder="MEX" maxlength="4" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white uppercase font-mono font-bold text-center">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">From (Origin IATA)</label>
+            <input type="text" id="inputFlightFrom" required maxlength="4" placeholder="SYD" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm font-bold tracking-wider text-white uppercase font-mono">
           </div>
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Destination (IATA)</label>
-            <input type="text" id="inputFlightTo" required placeholder="OAX" maxlength="4" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white uppercase font-mono font-bold text-center">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">To (Destination IATA)</label>
+            <input type="text" id="inputFlightTo" required maxlength="4" placeholder="MEX" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm font-bold tracking-wider text-white uppercase font-mono">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Departure Time (5m step)</label>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Departure Time</label>
             <div class="relative w-full">
-              <input type="text" id="inputFlightDepTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('inputFlightDepTime', true)">
+              <input type="text" id="inputFlightDepTime" readonly placeholder="Select Date & Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('inputFlightDepTime', true)">
               <button type="button" onclick="openIosWheelTimePicker('inputFlightDepTime', true)" class="absolute right-3 top-3.5 text-ios-blue">
                 <i data-lucide="clock" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Arrival Time (5m step)</label>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Arrival Time</label>
             <div class="relative w-full">
-              <input type="text" id="inputFlightArrTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('inputFlightArrTime', true)">
+              <input type="text" id="inputFlightArrTime" readonly placeholder="Select Date & Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('inputFlightArrTime', true)">
               <button type="button" onclick="openIosWheelTimePicker('inputFlightArrTime', true)" class="absolute right-3 top-3.5 text-ios-blue">
                 <i data-lucide="clock" class="w-4 h-4"></i>
               </button>
@@ -1503,29 +1367,29 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div class="grid grid-cols-3 gap-2">
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Terminal</label>
-            <input type="text" id="inputFlightTerminal" placeholder="T2" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="inputFlightTerminal" placeholder="T1" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Gate</label>
-            <input type="text" id="inputFlightGate" placeholder="B14" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="inputFlightGate" placeholder="24" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Seat</label>
-            <input type="text" id="inputFlightSeat" placeholder="12A" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="inputFlightSeat" placeholder="28A" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">PNR / Ref #</label>
-            <input type="text" id="inputFlightConf" placeholder="6Q8KZ" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono uppercase">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">PNR / Ref Code</label>
+            <input type="text" id="inputFlightConf" placeholder="QF-992K" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono uppercase">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Total Cost ($ AUD)</label>
-            <input type="number" id="inputFlightCost" required placeholder="320" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="number" id="inputFlightCost" required placeholder="1200" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Paid By</label>
@@ -1550,7 +1414,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-base font-bold text-white">Edit Flight</h3>
-          <p class="text-[11px] text-ios-gray">Update boarding pass and ticket details</p>
+          <p class="text-[11px] text-ios-gray">Update flight times, terminal, seats & cost</p>
         </div>
         <button onclick="closeBottomSheet('sheetEditFlight')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
           <i data-lucide="x" class="w-4 h-4"></i>
@@ -1563,39 +1427,39 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Airline</label>
-            <input type="text" id="editFlightAirline" required placeholder="Aeroméxico" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="editFlightAirline" required placeholder="e.g. Qantas" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Flight Number</label>
-            <input type="text" id="editFlightNum" required placeholder="AM 2044" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white uppercase font-mono">
+            <input type="text" id="editFlightNum" required placeholder="e.g. QF 3" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white uppercase font-mono">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Origin (IATA)</label>
-            <input type="text" id="editFlightFrom" required placeholder="MEX" maxlength="4" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white uppercase font-mono font-bold text-center">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">From (Origin IATA)</label>
+            <input type="text" id="editFlightFrom" required maxlength="4" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm font-bold tracking-wider text-white uppercase font-mono">
           </div>
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Destination (IATA)</label>
-            <input type="text" id="editFlightTo" required placeholder="OAX" maxlength="4" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white uppercase font-mono font-bold text-center">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">To (Destination IATA)</label>
+            <input type="text" id="editFlightTo" required maxlength="4" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm font-bold tracking-wider text-white uppercase font-mono">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Departure Time (5m step)</label>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Departure Time</label>
             <div class="relative w-full">
-              <input type="text" id="editFlightDepTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editFlightDepTime', true)">
+              <input type="text" id="editFlightDepTime" readonly placeholder="Select Date & Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editFlightDepTime', true)">
               <button type="button" onclick="openIosWheelTimePicker('editFlightDepTime', true)" class="absolute right-3 top-3.5 text-ios-blue">
                 <i data-lucide="clock" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Arrival Time (5m step)</label>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Arrival Time</label>
             <div class="relative w-full">
-              <input type="text" id="editFlightArrTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editFlightArrTime', true)">
+              <input type="text" id="editFlightArrTime" readonly placeholder="Select Date & Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editFlightArrTime', true)">
               <button type="button" onclick="openIosWheelTimePicker('editFlightArrTime', true)" class="absolute right-3 top-3.5 text-ios-blue">
                 <i data-lucide="clock" class="w-4 h-4"></i>
               </button>
@@ -1603,29 +1467,29 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div class="grid grid-cols-3 gap-2">
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Terminal</label>
-            <input type="text" id="editFlightTerminal" placeholder="T2" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="editFlightTerminal" placeholder="T1" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Gate</label>
-            <input type="text" id="editFlightGate" placeholder="B14" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="editFlightGate" placeholder="24" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Seat</label>
-            <input type="text" id="editFlightSeat" placeholder="12A" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="text" id="editFlightSeat" placeholder="28A" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">PNR / Ref #</label>
-            <input type="text" id="editFlightConf" placeholder="6Q8KZ" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono uppercase">
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">PNR / Ref Code</label>
+            <input type="text" id="editFlightConf" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono uppercase">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Total Cost ($ AUD)</label>
-            <input type="number" id="editFlightCost" required placeholder="320" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+            <input type="number" id="editFlightCost" required class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
           </div>
           <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Paid By</label>
@@ -1634,6 +1498,194 @@
               <option value="Hannah">Hannah</option>
             </select>
           </div>
+        </div>
+
+        <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
+          Save Changes
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SHEET 7C: ADD TRANSPORT -->
+  <div id="sheetAddTransport" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
+    <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
+      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white">Add Transit</h3>
+          <p class="text-[11px] text-ios-gray">Rental cars, coaches, rail, or ferries</p>
+        </div>
+        <button onclick="closeBottomSheet('sheetAddTransport')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveTransport(event)" class="space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Transit Type</label>
+            <select id="transInputType" onchange="updateTransportFormFields()" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="car">Rental Car</option>
+              <option value="bus">Coach / Bus</option>
+              <option value="train">Train / Rail</option>
+              <option value="ferry">Ferry / Boat</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Operator / Company</label>
+            <input type="text" id="transInputOperator" required placeholder="e.g. Hertz or ADO Bus" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label id="transLabelPickupPlace" class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Pickup Location</label>
+            <input type="text" id="transInputPickupPlace" required placeholder="e.g. Cancun Airport" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label id="transLabelDropoffPlace" class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Drop-off Location</label>
+            <input type="text" id="transInputDropoffPlace" required placeholder="e.g. Tulum Beach" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Departure / Pickup Time</label>
+            <div class="relative w-full">
+              <input type="text" id="transInputPickupTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('transInputPickupTime', true)">
+              <button type="button" onclick="openIosWheelTimePicker('transInputPickupTime', true)" class="absolute right-3 top-3.5 text-ios-green">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Arrival / Drop-off Time</label>
+            <div class="relative w-full">
+              <input type="text" id="transInputDropoffTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('transInputDropoffTime', true)">
+              <button type="button" onclick="openIosWheelTimePicker('transInputDropoffTime', true)" class="absolute right-3 top-3.5 text-ios-green">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Confirmation / Ref #</label>
+            <input type="text" id="transInputRef" placeholder="HZ-88319" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono uppercase">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Total Cost ($ AUD)</label>
+            <input type="number" id="transInputCost" required placeholder="420" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Paid By</label>
+            <select id="transInputPayer" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="Dean">Dean</option>
+              <option value="Hannah">Hannah</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Notes / Instructions</label>
+          <input type="text" id="transInputNotes" placeholder="Compact SUV with full insurance..." class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+        </div>
+
+        <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
+          Save Transit
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SHEET 7D: EDIT TRANSPORT -->
+  <div id="sheetEditTransport" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
+    <div class="w-full max-w-lg bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-10 space-y-4 max-h-[88vh] overflow-y-auto sheet-transition">
+      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white">Edit Transit</h3>
+          <p class="text-[11px] text-ios-gray">Update rental, bus, rail, or ferry booking</p>
+        </div>
+        <button onclick="closeBottomSheet('sheetEditTransport')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveEditedTransport(event)" class="space-y-3">
+        <input type="hidden" id="editTransId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Transit Type</label>
+            <select id="editTransType" onchange="updateEditTransportFormFields()" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="car">Rental Car</option>
+              <option value="bus">Coach / Bus</option>
+              <option value="train">Train / Rail</option>
+              <option value="ferry">Ferry / Boat</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Operator / Company</label>
+            <input type="text" id="editTransOperator" required placeholder="e.g. Hertz" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label id="editTransLabelPickupPlace" class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Pickup Location</label>
+            <input type="text" id="editTransPickupPlace" required class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label id="editTransLabelDropoffPlace" class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Drop-off Location</label>
+            <input type="text" id="editTransDropoffPlace" required class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Departure / Pickup Time</label>
+            <div class="relative w-full">
+              <input type="text" id="editTransPickupTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editTransPickupTime', true)">
+              <button type="button" onclick="openIosWheelTimePicker('editTransPickupTime', true)" class="absolute right-3 top-3.5 text-ios-green">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Arrival / Drop-off Time</label>
+            <div class="relative w-full">
+              <input type="text" id="editTransDropoffTime" readonly placeholder="Select Date & 5-Min Time" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white cursor-pointer" onclick="openIosWheelTimePicker('editTransDropoffTime', true)">
+              <button type="button" onclick="openIosWheelTimePicker('editTransDropoffTime', true)" class="absolute right-3 top-3.5 text-ios-green">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Confirmation / Ref #</label>
+            <input type="text" id="editTransRef" placeholder="HZ-88319" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-mono uppercase">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Total Cost ($ AUD)</label>
+            <input type="number" id="editTransCost" required placeholder="420" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Paid By</label>
+            <select id="editTransPayer" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
+              <option value="Dean">Dean</option>
+              <option value="Hannah">Hannah</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Notes / Instructions</label>
+          <input type="text" id="editTransNotes" placeholder="Compact SUV with full insurance..." class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white">
         </div>
 
         <button type="submit" class="w-full h-12 rounded-xl bg-white text-black font-bold text-xs active:scale-95 transition">
@@ -1680,9 +1732,35 @@
           </div>
         </div>
 
+        <!-- Priority and Itinerary Status for Schedule Modal -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Date</label>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Priority</label>
+            <select id="inputActPriority" class="w-full h-12 px-3 rounded-xl bg-ios-surfaceHigh border border-white/10 text-xs text-white font-semibold">
+              <option value="Must-Do" selected>🔥 Must-Do (Top Priority)</option>
+              <option value="Should-Do">✨ Should-Do (Recommended)</option>
+              <option value="Could-Do">💡 Could-Do (Optional Idea)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Itinerary Status</label>
+            <input type="hidden" id="inputActIsScheduled" value="scheduled">
+            <div class="grid grid-cols-2 p-1 rounded-xl bg-ios-surfaceHigh border border-white/10 h-12 items-center">
+              <button type="button" id="btnSchedEventSchedToggle" onclick="setEventModalStatus('scheduled')" class="h-10 rounded-lg text-xs font-bold bg-white text-black transition flex items-center justify-center space-x-1 shadow-sm">
+                <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i>
+                <span>Scheduled</span>
+              </button>
+              <button type="button" id="btnSchedEventOptToggle" onclick="setEventModalStatus('optional')" class="h-10 rounded-lg text-xs font-bold text-ios-gray transition flex items-center justify-center space-x-1">
+                <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+                <span>Optional</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Event Date</label>
             <div class="relative w-full">
               <input type="date" id="inputActDate" required class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white" onclick="openDatePickerFallback(this)">
               <button type="button" onclick="triggerPicker('inputActDate')" class="absolute right-3 top-3.5 text-ios-blue">
@@ -1691,9 +1769,9 @@
             </div>
           </div>
           <div>
-            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Time (5-Min Interval)</label>
+            <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Event Time</label>
             <div class="relative w-full">
-              <input type="text" id="inputActTime" readonly value="09:00" class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white cursor-pointer font-bold" onclick="openIosWheelTimePicker('inputActTime', false)">
+              <input type="text" id="inputActTime" readonly placeholder="09:00" class="w-full h-12 pl-3.5 pr-10 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white cursor-pointer" onclick="openIosWheelTimePicker('inputActTime', false)">
               <button type="button" onclick="openIosWheelTimePicker('inputActTime', false)" class="absolute right-3 top-3.5 text-ios-blue">
                 <i data-lucide="clock" class="w-4 h-4"></i>
               </button>
@@ -1702,7 +1780,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <div>
             <label class="text-[11px] font-bold text-ios-gray uppercase block mb-1">Cost ($ AUD)</label>
             <input type="number" id="inputActCost" placeholder="0" class="w-full h-12 px-3.5 rounded-xl bg-ios-surfaceHigh border border-white/10 text-sm text-white">
           </div>
@@ -2058,6 +2135,74 @@
     </div>
   </div>
 
+  <!-- SHEET: QUICK ADD SELECTOR (STAY, FLIGHT, TRANSIT, ACTIVITY) -->
+  <div id="sheetQuickAddPicker" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center" onclick="closeQuickAddPickerOnBackdrop(event)">
+    <div class="w-full max-w-md bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-8 space-y-4 sheet-transition">
+      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto"></div>
+
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white">Add to Trip</h3>
+          <p class="text-[11px] text-ios-gray">Choose what you want to add</p>
+        </div>
+        <button onclick="closeBottomSheet('sheetQuickAddPicker')" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-300">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- 4 Core Option Cards Grid -->
+      <div class="grid grid-cols-2 gap-2.5 pt-1">
+        <!-- 1. Stay -->
+        <button onclick="selectQuickAddType('stay')" class="p-4 rounded-2xl bg-ios-surfaceHigh hover:bg-white/10 border border-white/5 flex flex-col items-start space-y-2 text-left active:scale-95 transition group">
+          <div class="w-10 h-10 rounded-xl bg-ios-purple/20 text-ios-purple flex items-center justify-center group-hover:scale-105 transition">
+            <i data-lucide="hotel" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="text-sm font-bold text-white block">Stay</span>
+            <span class="text-[10px] text-ios-gray">Hotels, suites & villas</span>
+          </div>
+        </button>
+
+        <!-- 2. Flight -->
+        <button onclick="selectQuickAddType('flight')" class="p-4 rounded-2xl bg-ios-surfaceHigh hover:bg-white/10 border border-white/5 flex flex-col items-start space-y-2 text-left active:scale-95 transition group">
+          <div class="w-10 h-10 rounded-xl bg-ios-blue/20 text-ios-blue flex items-center justify-center group-hover:scale-105 transition">
+            <i data-lucide="plane" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="text-sm font-bold text-white block">Flight</span>
+            <span class="text-[10px] text-ios-gray">Boarding passes & airfares</span>
+          </div>
+        </button>
+
+        <!-- 3. Transit -->
+        <button onclick="selectQuickAddType('transport')" class="p-4 rounded-2xl bg-ios-surfaceHigh hover:bg-white/10 border border-white/5 flex flex-col items-start space-y-2 text-left active:scale-95 transition group">
+          <div class="w-10 h-10 rounded-xl bg-ios-green/20 text-ios-green flex items-center justify-center group-hover:scale-105 transition">
+            <i data-lucide="car" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="text-sm font-bold text-white block">Transit</span>
+            <span class="text-[10px] text-ios-gray">Car rentals, rail & ferries</span>
+          </div>
+        </button>
+
+        <!-- 4. Activity -->
+        <button onclick="selectQuickAddType('activity')" class="p-4 rounded-2xl bg-ios-surfaceHigh hover:bg-white/10 border border-white/5 flex flex-col items-start space-y-2 text-left active:scale-95 transition group">
+          <div class="w-10 h-10 rounded-xl bg-ios-orange/20 text-ios-orange flex items-center justify-center group-hover:scale-105 transition">
+            <i data-lucide="map-pin" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="text-sm font-bold text-white block">Activity</span>
+            <span class="text-[10px] text-ios-gray">Tours, sights, dining & visits</span>
+          </div>
+        </button>
+      </div>
+
+      <button onclick="closeBottomSheet('sheetQuickAddPicker')" class="w-full h-11 rounded-xl bg-white/10 text-white font-bold text-xs active:scale-95 transition">
+        Cancel
+      </button>
+    </div>
+  </div>
+
   <!-- MODAL: IPHONE 5-MIN WHEEL TIME PICKER -->
   <div id="modalIosWheelTimePicker" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end justify-center">
     <div class="w-full max-w-md bg-ios-surface rounded-t-[32px] border-t border-white/15 p-5 pb-8 space-y-4 sheet-transition">
@@ -2299,6 +2444,8 @@
               id: "a1",
               title: "Teotihuacan Sunrise Hot-Air Balloon",
               category: "Tours & Excursions",
+              priority: "Must-Do",
+              isScheduled: true,
               city: "Mexico City",
               distanceFromCentre: "48 km from CDMX",
               approxDuration: "5.5 hrs",
@@ -2315,6 +2462,8 @@
               id: "a2",
               title: "Pujol Chef's Tasting Experience",
               category: "Food & Dining",
+              priority: "Must-Do",
+              isScheduled: true,
               city: "Mexico City",
               distanceFromCentre: "4.2 km from Centro",
               approxDuration: "3 hrs",
@@ -2331,6 +2480,8 @@
               id: "a3",
               title: "Monte Albán Zapotec Ruins Exploration",
               category: "Sights & Culture",
+              priority: "Should-Do",
+              isScheduled: true,
               city: "Oaxaca",
               distanceFromCentre: "9 km from Oaxaca Centre",
               approxDuration: "3.5 hrs",
@@ -2347,6 +2498,8 @@
               id: "a4",
               title: "Cenote Dos Ojos Cave Snorkel",
               category: "Tours & Excursions",
+              priority: "Could-Do",
+              isScheduled: false,
               city: "Tulum",
               distanceFromCentre: "18 km north of Tulum",
               approxDuration: "4 hrs",
@@ -2379,6 +2532,8 @@
     let scheduleTypeFilter = "all";
     let scheduleDayFilter = "all";
     let activityCityFilter = "all";
+    let activityPriorityFilter = "all"; // "all" | "Must-Do" | "Should-Do" | "Could-Do"
+    let activityScheduleStatusFilter = "all"; // "all" | "scheduled" | "optional"
     let transportFilter = "all";
     let checklistMode = "packing"; // "packing" | "tasks"
 
@@ -2740,22 +2895,35 @@
       }
     }
 
-    function handleContextualAdd() {
-      if (currentTab === "overview" || currentTab === "schedule") {
-        openBottomSheet("sheetAddActivity");
-      } else if (currentTab === "activities") {
-        openBottomSheet("sheetAddActivityManual");
-      } else if (currentTab === "stays") {
-        openBottomSheet("sheetAddStay");
-      } else if (currentTab === "flights") {
-        openBottomSheet("sheetAddFlight");
-      } else if (currentTab === "transport") {
-        openBottomSheet("sheetAddTransport");
-      } else if (currentTab === "budget") {
-        openBottomSheet("sheetAddExpense");
-      } else if (currentTab === "checklists") {
-        openBottomSheet("sheetAddTask");
+    function openQuickAddPicker() {
+      openBottomSheet("sheetQuickAddPicker");
+    }
+
+    function closeQuickAddPickerOnBackdrop(e) {
+      if (e.target.id === "sheetQuickAddPicker") {
+        closeBottomSheet("sheetQuickAddPicker");
       }
+    }
+
+    function selectQuickAddType(type) {
+      closeBottomSheet("sheetQuickAddPicker");
+      switchTripSubTab(type === "transport" ? "transport" : (type === "stay" ? "stays" : (type === "flight" ? "flights" : "activities")));
+
+      setTimeout(() => {
+        if (type === "stay") {
+          openBottomSheet("sheetAddStay");
+        } else if (type === "flight") {
+          openBottomSheet("sheetAddFlight");
+        } else if (type === "transport") {
+          openBottomSheet("sheetAddTransport");
+        } else if (type === "activity") {
+          openBottomSheet("sheetAddActivityManual");
+        }
+      }, 100);
+    }
+
+    function handleContextualAdd() {
+      openQuickAddPicker();
     }
 
     // ==================== HOLIDAY HUB & TRIP MANAGEMENT ====================
@@ -2805,6 +2973,7 @@
       saveState();
       closeBottomSheet("sheetHolidayHub");
       renderAllViews();
+      recenterMap();
       showToast("Switched holiday trip!");
     }
 
@@ -2851,6 +3020,7 @@
       closeBottomSheet("sheetNewTrip");
       closeBottomSheet("sheetHolidayHub");
       renderAllViews();
+      recenterMap();
       showToast(`Created trip: ${title}`);
     }
 
@@ -2885,6 +3055,7 @@
       closeBottomSheet("sheetEditTripDetails");
       renderAllViews();
       renderHolidayHubList();
+      recenterMap();
       showToast("Trip details updated!");
     }
 
@@ -3314,11 +3485,11 @@
       const mapContainer = document.getElementById("overviewMap");
       if (!mapContainer || map) return;
 
-      // Initialize Leaflet Map centered on Mexico
+      // Initialize Leaflet Map
       map = L.map("overviewMap", {
         zoomControl: false,
         attributionControl: false
-      }).setView([19.4326, -99.1332], 5);
+      }).setView([20.0, 0.0], 2);
 
       // Dark Canvas Tile Layer
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
@@ -3329,63 +3500,136 @@
       updateMapMarkers("all");
     }
 
-    function updateMapMarkers(filterType = "all") {
+    // Geocoding cache to prevent redundant lookups
+    const geocodeCache = {};
+
+    async function geocodePlace(placeName) {
+      if (!placeName || placeName.trim().length === 0) return null;
+      const clean = placeName.trim().toLowerCase();
+      if (geocodeCache[clean]) return geocodeCache[clean];
+
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(clean)}&limit=1`, {
+          headers: { 'Accept-Language': 'en' }
+        });
+        const data = await resp.json();
+        if (data && data.length > 0) {
+          const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+          geocodeCache[clean] = coords;
+          return coords;
+        }
+      } catch (err) {
+        console.warn("Geocoding lookup failed for:", placeName, err);
+      }
+      return null;
+    }
+
+    async function updateMapMarkers(filterType = "all") {
       if (!map || !mapMarkersLayer) return;
       mapMarkersLayer.clearLayers();
 
       const trip = getActiveTrip();
+      if (!trip) return;
+
       const bounds = [];
 
       // Stays
       if (filterType === "all" || filterType === "stay") {
-        (trip.stays || []).forEach(stay => {
-          if (stay.lat && stay.lng) {
-            bounds.push([stay.lat, stay.lng]);
-            const marker = L.circleMarker([stay.lat, stay.lng], {
-              radius: 7,
+        for (const stay of (trip.stays || [])) {
+          let lat = stay.lat;
+          let lng = stay.lng;
+
+          // If coordinates are missing or zero, geocode dynamically by city & name
+          if (!lat || !lng) {
+            const query = `${stay.name || ''}, ${stay.city || ''}`.trim();
+            const geo = await geocodePlace(query) || await geocodePlace(stay.city);
+            if (geo) {
+              stay.lat = geo.lat;
+              stay.lng = geo.lng;
+              lat = geo.lat;
+              lng = geo.lng;
+            }
+          }
+
+          if (lat && lng) {
+            bounds.push([lat, lng]);
+            const marker = L.circleMarker([lat, lng], {
+              radius: 8,
               fillColor: "#BF5AF2",
               color: "#ffffff",
               weight: 2,
-              fillOpacity: 0.9
+              fillOpacity: 0.95
             });
             marker.bindPopup(`
               <div class="text-xs p-1">
-                <strong class="text-white block">${stay.name}</strong>
-                <span class="text-gray-400 block">${stay.city}</span>
-                <span class="text-ios-purple font-bold block pt-1">${formatMoney(stay.cost)}</span>
+                <span class="text-[9px] font-bold text-ios-purple uppercase tracking-wider block">🏨 Stay</span>
+                <strong class="text-white block text-sm">${stay.name}</strong>
+                <span class="text-gray-300 block">${stay.city}</span>
+                <span class="text-ios-teal font-mono font-bold block pt-1">${formatMoney(stay.cost)}</span>
               </div>
             `);
             mapMarkersLayer.addLayer(marker);
           }
-        });
+        }
       }
 
       // Activities
       if (filterType === "all" || filterType === "activity") {
-        (trip.activities || []).forEach(act => {
-          if (act.lat && act.lng) {
-            bounds.push([act.lat, act.lng]);
-            const marker = L.circleMarker([act.lat, act.lng], {
-              radius: 6,
+        for (const act of (trip.activities || [])) {
+          let lat = act.lat;
+          let lng = act.lng;
+
+          // If coordinates are missing, geocode dynamically by title & city
+          if (!lat || !lng) {
+            const query = `${act.title || ''}, ${act.city || ''}`.trim();
+            const geo = await geocodePlace(query) || await geocodePlace(act.city);
+            if (geo) {
+              act.lat = geo.lat;
+              act.lng = geo.lng;
+              lat = geo.lat;
+              lng = geo.lng;
+            }
+          }
+
+          if (lat && lng) {
+            bounds.push([lat, lng]);
+            const marker = L.circleMarker([lat, lng], {
+              radius: 7,
               fillColor: "#64D2FF",
               color: "#ffffff",
               weight: 2,
-              fillOpacity: 0.9
+              fillOpacity: 0.95
             });
             marker.bindPopup(`
               <div class="text-xs p-1">
-                <strong class="text-white block">${act.title}</strong>
-                <span class="text-gray-400 block">${act.city}</span>
-                <span class="text-ios-teal font-bold block pt-1">${act.approxDuration || ''}</span>
+                <span class="text-[9px] font-bold text-ios-teal uppercase tracking-wider block">🎯 Activity</span>
+                <strong class="text-white block text-sm">${act.title}</strong>
+                <span class="text-gray-300 block">${act.city}</span>
+                <span class="text-ios-orange font-semibold block pt-1">${act.approxDuration || act.priority || ''}</span>
               </div>
             `);
             mapMarkersLayer.addLayer(marker);
           }
-        });
+        }
       }
 
+      // Fit map bounds to current markers, or fallback to route geocoding
       if (bounds.length > 0) {
-        map.fitBounds(bounds, { padding: [30, 30] });
+        if (bounds.length === 1) {
+          map.setView(bounds[0], 12);
+        } else {
+          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+        }
+      } else {
+        // Fallback: Geocode destination from route or trip title
+        const routeStops = (trip.route || trip.title || "").split(/➔|->|,/).map(s => s.trim()).filter(Boolean);
+        const destination = routeStops[routeStops.length - 1] || routeStops[0] || trip.title;
+        if (destination) {
+          const geo = await geocodePlace(destination);
+          if (geo) {
+            map.setView([geo.lat, geo.lng], 10);
+          }
+        }
       }
     }
 
@@ -3399,9 +3643,30 @@
       updateMapMarkers(type);
     }
 
-    function recenterMap() {
-      if (map) {
-        map.setView([19.4326, -99.1332], 5);
+    async function recenterMap() {
+      if (!map) return;
+      const trip = getActiveTrip();
+      if (!trip) return;
+
+      const bounds = [];
+      (trip.stays || []).forEach(s => { if (s.lat && s.lng) bounds.push([s.lat, s.lng]); });
+      (trip.activities || []).forEach(a => { if (a.lat && a.lng) bounds.push([a.lat, a.lng]); });
+
+      if (bounds.length > 0) {
+        if (bounds.length === 1) {
+          map.setView(bounds[0], 12);
+        } else {
+          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+        }
+      } else {
+        const routeStops = (trip.route || trip.title || "").split(/➔|->|,/).map(s => s.trim()).filter(Boolean);
+        const destination = routeStops[routeStops.length - 1] || routeStops[0] || trip.title;
+        const geo = await geocodePlace(destination);
+        if (geo) {
+          map.setView([geo.lat, geo.lng], 10);
+        } else {
+          map.setView([20.0, 0.0], 2);
+        }
       }
     }
 
@@ -3501,7 +3766,8 @@
         const hotel = (trip.stays || []).find(s => s.checkIn <= d.dateStr && s.checkOut > d.dateStr);
         const dayFlights = (trip.flights || []).filter(f => (f.departureTime || "").startsWith(d.dateStr));
         const dayTransit = (trip.transports || []).filter(t => (t.pickupTime || "").startsWith(d.dateStr));
-        const dayActivities = (trip.activities || []).filter(a => a.date === d.dateStr);
+        // ONLY include activities that are marked as isScheduled (not optional)
+        const dayActivities = (trip.activities || []).filter(a => a.date === d.dateStr && a.isScheduled !== false);
 
         return `
           <div class="p-4 rounded-2xl bg-ios-surface border border-white/10 space-y-2">
@@ -3538,7 +3804,7 @@
               ${dayActivities.map(a => `
                 <div class="flex items-center space-x-1.5 text-gray-400">
                   <i data-lucide="check" class="w-3.5 h-3.5 text-ios-orange"></i>
-                  <span>${a.title} (${a.time})</span>
+                  <span>${a.title} (${a.time || 'TBD'})</span>
                 </div>
               `).join("")}
             </div>
@@ -3640,19 +3906,21 @@
         });
       }
 
-      // Activities
+      // Activities (ONLY include if scheduled, ignore optional)
       if (scheduleTypeFilter === "all" || scheduleTypeFilter === "activity") {
         (trip.activities || []).forEach(a => {
-          events.push({
-            type: "activity",
-            dateStr: a.date,
-            timeStr: a.time || "09:00",
-            title: a.title,
-            subtitle: `${a.city} • ${a.approxDuration || ''} • ${a.category || ''}`,
-            cost: a.cost,
-            paidBy: a.paidBy,
-            raw: a
-          });
+          if (a.isScheduled !== false) {
+            events.push({
+              type: "activity",
+              dateStr: a.date,
+              timeStr: a.time || "09:00",
+              title: a.title,
+              subtitle: `${a.city} • ${a.approxDuration || ''} • ${a.priority || 'Should-Do'}`,
+              cost: a.cost,
+              paidBy: a.paidBy,
+              raw: a
+            });
+          }
         });
       }
 
@@ -3714,6 +3982,8 @@
       const title = document.getElementById("inputActTitle").value.trim();
       const category = document.getElementById("inputActCategory").value;
       const city = document.getElementById("inputActLocation").value.trim();
+      const priority = document.getElementById("inputActPriority")?.value || "Must-Do";
+      const isScheduled = (document.getElementById("inputActIsScheduled")?.value || "scheduled") === "scheduled";
       const date = document.getElementById("inputActDate").value;
       const time = document.getElementById("inputActTime").value;
       const cost = parseFloat(document.getElementById("inputActCost").value) || 0;
@@ -3725,6 +3995,8 @@
         title,
         category,
         city,
+        priority,
+        isScheduled,
         date,
         time,
         cost,
@@ -3735,7 +4007,56 @@
       saveState();
       closeBottomSheet("sheetAddActivity");
       renderAllViews();
-      showToast(`Added event: ${title}`);
+      showToast(`Added event: ${title} (${isScheduled ? 'Scheduled' : 'Optional'})`);
+    }
+
+    // Modal Status Toggle Helpers
+    function setAddActivityStatus(status) {
+      const input = document.getElementById("manualActIsScheduled");
+      const btnSched = document.getElementById("btnManualSchedToggle");
+      const btnOpt = document.getElementById("btnManualOptToggle");
+      if (!input || !btnSched || !btnOpt) return;
+
+      input.value = status;
+      if (status === "scheduled") {
+        btnSched.className = "h-10 rounded-lg text-xs font-bold bg-white text-black transition flex items-center justify-center space-x-1 shadow-sm";
+        btnOpt.className = "h-10 rounded-lg text-xs font-bold text-ios-gray transition flex items-center justify-center space-x-1";
+      } else {
+        btnOpt.className = "h-10 rounded-lg text-xs font-bold bg-white text-black transition flex items-center justify-center space-x-1 shadow-sm";
+        btnSched.className = "h-10 rounded-lg text-xs font-bold text-ios-gray transition flex items-center justify-center space-x-1";
+      }
+    }
+
+    function setEditActivityStatus(status) {
+      const input = document.getElementById("editActIsScheduled");
+      const btnSched = document.getElementById("btnEditSchedToggle");
+      const btnOpt = document.getElementById("btnEditOptToggle");
+      if (!input || !btnSched || !btnOpt) return;
+
+      input.value = status;
+      if (status === "scheduled") {
+        btnSched.className = "h-10 rounded-lg text-xs font-bold bg-white text-black transition flex items-center justify-center space-x-1 shadow-sm";
+        btnOpt.className = "h-10 rounded-lg text-xs font-bold text-ios-gray transition flex items-center justify-center space-x-1";
+      } else {
+        btnOpt.className = "h-10 rounded-lg text-xs font-bold bg-white text-black transition flex items-center justify-center space-x-1 shadow-sm";
+        btnSched.className = "h-10 rounded-lg text-xs font-bold text-ios-gray transition flex items-center justify-center space-x-1";
+      }
+    }
+
+    function setEventModalStatus(status) {
+      const input = document.getElementById("inputActIsScheduled");
+      const btnSched = document.getElementById("btnSchedEventSchedToggle");
+      const btnOpt = document.getElementById("btnSchedEventOptToggle");
+      if (!input || !btnSched || !btnOpt) return;
+
+      input.value = status;
+      if (status === "scheduled") {
+        btnSched.className = "h-10 rounded-lg text-xs font-bold bg-white text-black transition flex items-center justify-center space-x-1 shadow-sm";
+        btnOpt.className = "h-10 rounded-lg text-xs font-bold text-ios-gray transition flex items-center justify-center space-x-1";
+      } else {
+        btnOpt.className = "h-10 rounded-lg text-xs font-bold bg-white text-black transition flex items-center justify-center space-x-1 shadow-sm";
+        btnSched.className = "h-10 rounded-lg text-xs font-bold text-ios-gray transition flex items-center justify-center space-x-1";
+      }
     }
 
     // ==================== ACTIVITIES TAB ====================
@@ -3743,6 +4064,42 @@
       activityCityFilter = city;
       renderActivityCityFilterBar();
       renderActivitiesList();
+    }
+
+    function setActivityPriorityFilter(priority) {
+      activityPriorityFilter = priority;
+      document.querySelectorAll(".act-priority-chip").forEach(btn => {
+        if (btn.getAttribute("data-priority") === priority) {
+          btn.className = "act-priority-chip px-3 py-1 rounded-full text-xs font-semibold bg-white text-black shrink-0 transition";
+        } else {
+          btn.className = "act-priority-chip px-3 py-1 rounded-full text-xs font-semibold bg-ios-surface text-gray-300 border border-white/10 shrink-0 transition";
+        }
+      });
+      renderActivitiesList();
+    }
+
+    function setActivityScheduleStatusFilter(status) {
+      activityScheduleStatusFilter = status;
+      document.querySelectorAll(".act-status-chip").forEach(btn => {
+        if (btn.getAttribute("data-status") === status) {
+          btn.className = "act-status-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white/20 text-white shrink-0 transition";
+        } else {
+          btn.className = "act-status-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-ios-surface text-gray-400 border border-white/5 shrink-0 transition";
+        }
+      });
+      renderActivitiesList();
+    }
+
+    function toggleActivityScheduledStatus(actId, e) {
+      if (e) e.stopPropagation();
+      const trip = getActiveTrip();
+      const act = (trip.activities || []).find(a => a.id === actId);
+      if (!act) return;
+
+      act.isScheduled = act.isScheduled === false ? true : false;
+      saveState();
+      renderAllViews();
+      showToast(act.isScheduled ? `"${act.title}" added to Schedule!` : `"${act.title}" set to Optional (Hidden from Schedule)`);
     }
 
     function renderActivityCityFilterBar() {
@@ -3782,55 +4139,92 @@
       renderActivityCityFilterBar();
 
       let list = trip.activities || [];
+      
+      // City filter
       if (activityCityFilter !== "all") {
         list = list.filter(a => (a.city || "").trim().toLowerCase() === activityCityFilter.trim().toLowerCase());
+      }
+
+      // Priority filter
+      if (activityPriorityFilter !== "all") {
+        list = list.filter(a => (a.priority || "Should-Do") === activityPriorityFilter);
+      }
+
+      // Scheduled vs Optional filter
+      if (activityScheduleStatusFilter === "scheduled") {
+        list = list.filter(a => a.isScheduled !== false);
+      } else if (activityScheduleStatusFilter === "optional") {
+        list = list.filter(a => a.isScheduled === false);
       }
 
       if (list.length === 0) {
         container.innerHTML = `
           <div class="p-8 text-center text-ios-gray text-xs rounded-2xl bg-ios-surface border border-white/5 space-y-2">
-            <p>No activities added for this stop yet.</p>
-            <button onclick="openBottomSheet('sheetAddActivityManual')" class="text-ios-teal underline font-medium">Add an Activity</button>
+            <p>No activities match the selected filters.</p>
+            <button onclick="setActivityPriorityFilter('all'); setActivityScheduleStatusFilter('all'); setActivityCityFilter('all');" class="text-ios-teal underline font-medium">Clear All Filters</button>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = list.map(a => `
-        <div class="p-4 rounded-3xl bg-ios-surface border border-white/10 space-y-3">
-          <div class="flex items-start justify-between">
-            <div>
-              <span class="text-[10px] font-bold text-ios-orange uppercase tracking-wider">${a.category || 'Sightseeing'}</span>
-              <h3 class="text-base font-bold text-white tracking-tight">${a.title}</h3>
-              <p class="text-xs text-ios-gray">${a.city} • ${a.distanceFromCentre || 'Near Center'}</p>
+      container.innerHTML = list.map(a => {
+        const priority = a.priority || "Should-Do";
+        const isScheduled = a.isScheduled !== false; // default true if unset
+
+        // Priority badges
+        let priorityBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-ios-orange/20 text-ios-orange border border-ios-orange/30">✨ Should-Do</span>`;
+        if (priority === "Must-Do") {
+          priorityBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-ios-red/20 text-ios-red border border-ios-red/30">🔥 Must-Do</span>`;
+        } else if (priority === "Could-Do") {
+          priorityBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-ios-teal/20 text-ios-teal border border-ios-teal/30">💡 Could-Do</span>`;
+        }
+
+        return `
+          <div class="p-4 rounded-3xl bg-ios-surface border border-white/10 space-y-3">
+            <div class="flex items-start justify-between">
+              <div class="space-y-1">
+                <div class="flex items-center space-x-2">
+                  ${priorityBadge}
+                  <!-- Interactive Toggle for Scheduled vs Optional on Card -->
+                  <button type="button" onclick="toggleActivityScheduledStatus('${a.id}', event)" class="px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center space-x-1.5 transition active:scale-95 ${isScheduled ? 'bg-ios-green/20 text-ios-green border border-ios-green/40 shadow-sm' : 'bg-white/10 text-gray-400 border border-white/10 hover:border-white/20'}">
+                    <i data-lucide="${isScheduled ? 'calendar-check' : 'bookmark'}" class="w-3.5 h-3.5"></i>
+                    <span>${isScheduled ? 'Scheduled' : 'Optional / Idea'}</span>
+                  </button>
+                </div>
+                <h3 class="text-base font-bold text-white tracking-tight pt-0.5">${a.title}</h3>
+                <p class="text-xs text-ios-gray">${a.category || 'Sightseeing'} • ${a.city} • ${a.distanceFromCentre || 'Near Center'}</p>
+              </div>
+              ${a.cost ? `<span class="text-sm font-black text-ios-teal shrink-0">${formatMoney(a.cost)}</span>` : ''}
             </div>
-            ${a.cost ? `<span class="text-sm font-black text-ios-teal">${formatMoney(a.cost)}</span>` : ''}
-          </div>
 
-          <div class="flex items-center space-x-3 text-xs text-gray-300">
-            ${a.approxDuration ? `<span class="flex items-center space-x-1"><i data-lucide="clock" class="w-3.5 h-3.5 text-ios-teal"></i><span>${a.approxDuration}</span></span>` : ''}
-            ${a.date ? `<span class="flex items-center space-x-1"><i data-lucide="calendar" class="w-3.5 h-3.5 text-ios-blue"></i><span>${formatDateFriendly(a.date)}</span></span>` : ''}
-          </div>
+            <div class="flex items-center space-x-3 text-xs text-gray-300">
+              ${a.approxDuration ? `<span class="flex items-center space-x-1"><i data-lucide="clock" class="w-3.5 h-3.5 text-ios-teal"></i><span>${a.approxDuration}</span></span>` : ''}
+              ${a.date ? `<span class="flex items-center space-x-1"><i data-lucide="calendar" class="w-3.5 h-3.5 text-ios-blue"></i><span>${formatDateFriendly(a.date)}</span></span>` : ''}
+              <span class="text-[11px] text-ios-gray italic cursor-pointer hover:underline" onclick="toggleActivityScheduledStatus('${a.id}', event)">
+                ${isScheduled ? '✓ In Schedule (Tap to make Optional)' : '○ Optional (Tap to add to Schedule)'}
+              </span>
+            </div>
 
-          ${a.notes ? `<p class="text-xs text-gray-400 bg-ios-surfaceHigh/60 p-2.5 rounded-xl border border-white/5">${a.notes}</p>` : ''}
+            ${a.notes ? `<p class="text-xs text-gray-400 bg-ios-surfaceHigh/60 p-2.5 rounded-xl border border-white/5">${a.notes}</p>` : ''}
 
-          <div class="flex items-center justify-between pt-1 border-t border-white/5">
-            ${a.url ? `
-              <a href="${a.url}" target="_blank" rel="noopener noreferrer" class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
-                <span>Book / Website</span>
-                <i data-lucide="external-link" class="w-3.5 h-3.5 text-ios-teal"></i>
-              </a>
-            ` : '<div></div>'}
-            <div class="flex items-center space-x-3">
-              <button onclick="promptEditActivity('${a.id}')" class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
-                <i data-lucide="pencil" class="w-3.5 h-3.5 text-ios-teal"></i>
-                <span>Edit</span>
-              </button>
-              <button onclick="removeActivity('${a.id}')" class="text-xs text-ios-red hover:underline">Remove</button>
+            <div class="flex items-center justify-between pt-1 border-t border-white/5">
+              ${a.url ? `
+                <a href="${a.url}" target="_blank" rel="noopener noreferrer" class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
+                  <span>Book / Website</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 text-ios-teal"></i>
+                </a>
+              ` : '<div></div>'}
+              <div class="flex items-center space-x-3">
+                <button onclick="promptEditActivity('${a.id}')" class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-white flex items-center space-x-1.5 transition">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5 text-ios-teal"></i>
+                  <span>Edit</span>
+                </button>
+                <button onclick="removeActivity('${a.id}')" class="text-xs text-ios-red hover:underline">Remove</button>
+              </div>
             </div>
           </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
 
       lucide.createIcons();
     }
@@ -3844,6 +4238,11 @@
       document.getElementById("editActTitle").value = act.title || "";
       document.getElementById("editActCity").value = act.city || "";
       document.getElementById("editActCategory").value = act.category || "Tours & Excursions";
+      document.getElementById("editActPriority").value = act.priority || "Should-Do";
+      
+      const isSched = act.isScheduled !== false;
+      setEditActivityStatus(isSched ? "scheduled" : "optional");
+
       document.getElementById("editActDist").value = act.distanceFromCentre || "";
       document.getElementById("editActDuration").value = act.approxDuration || "";
       document.getElementById("editActCost").value = act.cost !== undefined ? act.cost : 0;
@@ -3862,16 +4261,19 @@
       openBottomSheet("sheetEditActivityManual");
     }
 
-    function handleSaveEditedActivity(e) {
+    async function handleSaveEditedActivity(e) {
       e.preventDefault();
       const trip = getActiveTrip();
       const actId = document.getElementById("editActId").value;
       const act = (trip.activities || []).find(a => a.id === actId);
       if (!act) return;
 
+      const oldCity = act.city;
       act.title = document.getElementById("editActTitle").value.trim();
       act.city = document.getElementById("editActCity").value.trim();
       act.category = document.getElementById("editActCategory").value;
+      act.priority = document.getElementById("editActPriority").value;
+      act.isScheduled = (document.getElementById("editActIsScheduled")?.value || "scheduled") === "scheduled";
       act.distanceFromCentre = document.getElementById("editActDist").value.trim();
       act.approxDuration = document.getElementById("editActDuration").value.trim();
       act.cost = parseFloat(document.getElementById("editActCost").value) || 0;
@@ -3880,10 +4282,19 @@
       act.url = document.getElementById("editActUrl").value.trim();
       act.notes = document.getElementById("editActNotes").value.trim();
 
+      if (act.city !== oldCity || !act.lat) {
+        const geo = await geocodePlace(`${act.title}, ${act.city}`) || await geocodePlace(act.city);
+        if (geo) {
+          act.lat = geo.lat;
+          act.lng = geo.lng;
+        }
+      }
+
       saveState();
       closeBottomSheet("sheetEditActivityManual");
       renderAllViews();
-      showToast(`Updated activity: ${act.title}`);
+      recenterMap();
+      showToast(`Updated activity: ${act.title} (${act.isScheduled ? 'Scheduled' : 'Optional'})`);
     }
 
     function removeActivity(id) {
@@ -3894,12 +4305,14 @@
       showToast("Activity removed.");
     }
 
-    function handleManualAddActivity(e) {
+    async function handleManualAddActivity(e) {
       e.preventDefault();
       const trip = getActiveTrip();
       const title = document.getElementById("manualActTitle").value.trim();
       const city = document.getElementById("manualActCity").value.trim();
       const category = document.getElementById("manualActCategory").value;
+      const priority = document.getElementById("manualActPriority").value;
+      const isScheduled = (document.getElementById("manualActIsScheduled")?.value || "scheduled") === "scheduled";
       const distanceFromCentre = document.getElementById("manualActDist").value.trim();
       const approxDuration = document.getElementById("manualActDuration").value.trim();
       const cost = parseFloat(document.getElementById("manualActCost").value) || 0;
@@ -3907,11 +4320,16 @@
       const url = document.getElementById("manualActUrl").value.trim();
       const notes = document.getElementById("manualActNotes").value.trim();
 
+      // Geocode the new activity location dynamically
+      const geo = await geocodePlace(`${title}, ${city}`) || await geocodePlace(city);
+
       trip.activities.push({
         id: "act_" + Date.now(),
         title,
         city,
         category,
+        priority,
+        isScheduled,
         distanceFromCentre,
         approxDuration,
         cost,
@@ -3919,10 +4337,12 @@
         time: "10:00",
         paidBy: "Dean",
         url,
-        notes
+        notes,
+        lat: geo ? geo.lat : null,
+        lng: geo ? geo.lng : null
       });
 
-      // Clear input fields
+      // Clear input fields and reset toggle to scheduled default
       document.getElementById("manualActTitle").value = "";
       document.getElementById("manualActCity").value = "";
       document.getElementById("manualActDist").value = "";
@@ -3930,11 +4350,14 @@
       document.getElementById("manualActCost").value = "";
       document.getElementById("manualActUrl").value = "";
       document.getElementById("manualActNotes").value = "";
+      setAddActivityStatus("scheduled");
 
       saveState();
       closeBottomSheet("sheetAddActivityManual");
       renderAllViews();
-      showToast(`Added activity: ${title}`);
+      switchTripSubTab("activities");
+      recenterMap();
+      showToast(`Added activity: ${title} (${isScheduled ? 'Scheduled' : 'Optional'})`);
     }
 
     function openAiActivityFinderModal() {
@@ -4134,6 +4557,8 @@
         title: item.title,
         city: city,
         category: cat,
+        priority: "Should-Do",
+        isScheduled: true,
         distanceFromCentre: item.distanceFromCentre,
         approxDuration: item.approxDuration,
         cost: item.approxCostAud,
@@ -4295,13 +4720,14 @@
       openBottomSheet("sheetEditStay");
     }
 
-    function handleSaveEditedStay(e) {
+    async function handleSaveEditedStay(e) {
       e.preventDefault();
       const trip = getActiveTrip();
       const stayId = document.getElementById("editStayId").value;
       const stay = (trip.stays || []).find(s => s.id === stayId);
       if (!stay) return;
 
+      const oldCity = stay.city;
       stay.name = document.getElementById("editStayName").value.trim();
       stay.city = document.getElementById("editStayCity").value.trim();
       stay.checkIn = document.getElementById("editStayCheckIn").value;
@@ -4315,14 +4741,19 @@
       stay.conf = document.getElementById("editStayConf").value.trim();
       stay.breakfastIncluded = tempEditBreakfastState;
 
-      // Update coordinates dynamically if city changed
-      const cLower = stay.city.toLowerCase();
-      stay.lat = cLower.includes("oaxaca") ? 17.0654 : (cLower.includes("tulum") ? 20.1423 : 19.4326);
-      stay.lng = cLower.includes("oaxaca") ? -96.7236 : (cLower.includes("tulum") ? -87.4589 : -99.1332);
+      // Geocode the stay dynamically if city or hotel changed
+      if (stay.city !== oldCity || !stay.lat) {
+        const geo = await geocodePlace(`${stay.name}, ${stay.city}`) || await geocodePlace(stay.city);
+        if (geo) {
+          stay.lat = geo.lat;
+          stay.lng = geo.lng;
+        }
+      }
 
       saveState();
       closeBottomSheet("sheetEditStay");
       renderAllViews();
+      recenterMap();
       showToast(`Updated stay: ${stay.name}`);
     }
 
@@ -4331,10 +4762,11 @@
       trip.stays = (trip.stays || []).filter(s => s.id !== id);
       saveState();
       renderAllViews();
-      showToast("Stay removed.");
+      recenterMap();
+      showToast("Accommodation removed.");
     }
 
-    function handleSaveStay(e) {
+    async function handleSaveStay(e) {
       e.preventDefault();
       const trip = getActiveTrip();
       const name = document.getElementById("inputStayName").value.trim();
@@ -4348,6 +4780,9 @@
       const paymentStatus = document.getElementById("inputStayPaymentStatus").value;
       const paidBy = document.getElementById("inputStayPayer").value;
       const conf = document.getElementById("inputStayConf").value.trim();
+
+      // Geocode dynamically from the actual name and city entered
+      const geo = await geocodePlace(`${name}, ${city}`) || await geocodePlace(city);
 
       trip.stays.push({
         id: "stay_" + Date.now(),
@@ -4363,13 +4798,15 @@
         paymentStatus,
         paidBy,
         conf,
-        lat: city.toLowerCase().includes("oaxaca") ? 17.0654 : (city.toLowerCase().includes("tulum") ? 20.1423 : 19.4326),
-        lng: city.toLowerCase().includes("oaxaca") ? -96.7236 : (city.toLowerCase().includes("tulum") ? -87.4589 : -99.1332)
+        lat: geo ? geo.lat : null,
+        lng: geo ? geo.lng : null
       });
 
       saveState();
       closeBottomSheet("sheetAddStay");
       renderAllViews();
+      switchTripSubTab("stays");
+      recenterMap();
       showToast(`Added stay: ${name}`);
     }
 
@@ -4484,18 +4921,23 @@
       const flight = (trip.flights || []).find(f => f.id === flightId);
       if (!flight) return;
 
-      document.getElementById("editFlightId").value = flight.id;
-      document.getElementById("editFlightAirline").value = flight.airline || "";
-      document.getElementById("editFlightNum").value = flight.flightNum || "";
-      document.getElementById("editFlightFrom").value = flight.from || "";
-      document.getElementById("editFlightTo").value = flight.to || "";
-      document.getElementById("editFlightDepTime").value = flight.departureTime || "";
-      document.getElementById("editFlightArrTime").value = flight.arrivalTime || "";
-      document.getElementById("editFlightTerminal").value = flight.terminal || "";
-      document.getElementById("editFlightGate").value = flight.gate || "";
-      document.getElementById("editFlightSeat").value = flight.seat || "";
-      document.getElementById("editFlightConf").value = flight.conf || "";
-      document.getElementById("editFlightCost").value = flight.cost !== undefined ? flight.cost : 0;
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+
+      setVal("editFlightId", flight.id);
+      setVal("editFlightAirline", flight.airline || "");
+      setVal("editFlightNum", flight.flightNum || "");
+      setVal("editFlightFrom", flight.from || "");
+      setVal("editFlightTo", flight.to || "");
+      setVal("editFlightDepTime", flight.departureTime || "");
+      setVal("editFlightArrTime", flight.arrivalTime || "");
+      setVal("editFlightTerminal", flight.terminal || "");
+      setVal("editFlightGate", flight.gate || "");
+      setVal("editFlightSeat", flight.seat || "");
+      setVal("editFlightConf", flight.conf || "");
+      setVal("editFlightCost", flight.cost !== undefined ? flight.cost : 0);
 
       // Populate companion options dynamically for edit flight payer
       const payerSelect = document.getElementById("editFlightPayer");
@@ -4577,6 +5019,7 @@
       saveState();
       closeBottomSheet("sheetAddFlight");
       renderAllViews();
+      switchTripSubTab("flights");
       showToast(`Added flight: ${airline} ${flightNum}`);
     }
 
@@ -4726,16 +5169,21 @@
       const t = (trip.transports || []).find(item => item.id === transId);
       if (!t) return;
 
-      document.getElementById("editTransId").value = t.id;
-      document.getElementById("editTransType").value = t.type || "car";
-      document.getElementById("editTransOperator").value = t.operator || "";
-      document.getElementById("editTransPickupPlace").value = t.pickupPlace || "";
-      document.getElementById("editTransDropoffPlace").value = t.dropoffPlace || "";
-      document.getElementById("editTransPickupTime").value = t.pickupTime || "";
-      document.getElementById("editTransDropoffTime").value = t.dropoffTime || "";
-      document.getElementById("editTransRef").value = t.ref || "";
-      document.getElementById("editTransCost").value = t.cost !== undefined ? t.cost : 0;
-      document.getElementById("editTransNotes").value = t.notes || "";
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+
+      setVal("editTransId", t.id);
+      setVal("editTransType", t.type || "car");
+      setVal("editTransOperator", t.operator || "");
+      setVal("editTransPickupPlace", t.pickupPlace || "");
+      setVal("editTransDropoffPlace", t.dropoffPlace || "");
+      setVal("editTransPickupTime", t.pickupTime || "");
+      setVal("editTransDropoffTime", t.dropoffTime || "");
+      setVal("editTransRef", t.ref || "");
+      setVal("editTransCost", t.cost !== undefined ? t.cost : 0);
+      setVal("editTransNotes", t.notes || "");
 
       updateEditTransportFormFields();
 
@@ -4750,54 +5198,72 @@
       openBottomSheet("sheetEditTransport");
     }
 
-    function handleSaveEditedTransport(e) {
-      e.preventDefault();
-      const trip = getActiveTrip();
-      const transId = document.getElementById("editTransId").value;
-      const t = (trip.transports || []).find(item => item.id === transId);
-      if (!t) return;
+    function updateEditTransportFormFields() {
+      const typeEl = document.getElementById("editTransType");
+      if (!typeEl) return;
+      const type = typeEl.value;
+      const lblPick = document.getElementById("editTransLabelPickupPlace");
+      const lblDrop = document.getElementById("editTransLabelDropoffPlace");
 
-      t.type = document.getElementById("editTransType").value;
-      t.operator = document.getElementById("editTransOperator").value.trim();
-      t.pickupPlace = document.getElementById("editTransPickupPlace").value.trim();
-      t.dropoffPlace = document.getElementById("editTransDropoffPlace").value.trim();
-      t.pickupTime = document.getElementById("editTransPickupTime").value;
-      t.dropoffTime = document.getElementById("editTransDropoffTime").value;
-      t.ref = document.getElementById("editTransRef").value.trim().toUpperCase();
-      t.cost = parseFloat(document.getElementById("editTransCost").value) || 0;
-      t.paidBy = document.getElementById("editTransPayer").value;
-      t.notes = document.getElementById("editTransNotes").value.trim();
-
-      saveState();
-      closeBottomSheet("sheetEditTransport");
-      renderAllViews();
-      showToast(`Updated transit: ${t.operator}`);
+      if (lblPick && lblDrop) {
+        if (type === "car") {
+          lblPick.innerText = "Pickup Location (Office / Airport)";
+          lblDrop.innerText = "Drop-off Location";
+        } else if (type === "ferry") {
+          lblPick.innerText = "Departure Port / Pier";
+          lblDrop.innerText = "Arrival Port / Pier";
+        } else {
+          lblPick.innerText = "Origin Station / Stop";
+          lblDrop.innerText = "Destination Station / Stop";
+        }
+      }
     }
 
-    function removeTransport(id) {
-      const trip = getActiveTrip();
-      trip.transports = (trip.transports || []).filter(t => t.id !== id);
-      saveState();
-      renderAllViews();
-      showToast("Transport booking removed.");
+    // ==================== CHECKLISTS & PACKING ====================
+    function switchChecklistMode(mode) {
+      checklistMode = mode;
+      const btnPacking = document.getElementById("chkModeBtnPacking");
+      const btnTasks = document.getElementById("chkModeBtnTasks");
+      if (mode === "packing") {
+        if (btnPacking) btnPacking.className = "flex-1 py-1.5 rounded-xl bg-ios-surfaceHigh text-white shadow-xs transition";
+        if (btnTasks) btnTasks.className = "flex-1 py-1.5 rounded-xl transition text-ios-gray";
+      } else {
+        if (btnTasks) btnTasks.className = "flex-1 py-1.5 rounded-xl bg-ios-surfaceHigh text-white shadow-xs transition";
+        if (btnPacking) btnPacking.className = "flex-1 py-1.5 rounded-xl transition text-ios-gray";
+      }
+      renderChecklistsTab();
     }
 
+    function toggleTaskCompleted(taskId) {
+      const trip = getActiveTrip();
+      const task = (trip.tasks || []).find(t => t.id === taskId);
+      if (task) {
+        task.completed = !task.completed;
+        saveState();
+        renderChecklistsTab();
+      }
+    }
+
+    // ==================== GROUND & SEA TRANSIT HANDLERS ====================
     function handleSaveTransport(e) {
       e.preventDefault();
       const trip = getActiveTrip();
-      const type = document.getElementById("transInputType").value;
-      const operator = document.getElementById("transInputOperator").value.trim();
-      const pickupPlace = document.getElementById("transInputPickupPlace").value.trim();
-      const dropoffPlace = document.getElementById("transInputDropoffPlace").value.trim();
-      const pickupTime = document.getElementById("transInputPickupTime").value;
-      const dropoffTime = document.getElementById("transInputDropoffTime").value;
-      const ref = document.getElementById("transInputRef").value.trim().toUpperCase();
-      const cost = parseFloat(document.getElementById("transInputCost").value) || 0;
-      const paidBy = document.getElementById("transInputPayer").value;
-      const notes = document.getElementById("transInputNotes").value.trim();
+      if (!trip) return;
+      if (!trip.transports) trip.transports = [];
+
+      const type = document.getElementById("transInputType")?.value || "car";
+      const operator = document.getElementById("transInputOperator")?.value?.trim() || "";
+      const pickupPlace = document.getElementById("transInputPickupPlace")?.value?.trim() || "";
+      const dropoffPlace = document.getElementById("transInputDropoffPlace")?.value?.trim() || "";
+      const pickupTime = document.getElementById("transInputPickupTime")?.value || "";
+      const dropoffTime = document.getElementById("transInputDropoffTime")?.value || "";
+      const ref = document.getElementById("transInputRef")?.value?.trim() || "";
+      const cost = parseFloat(document.getElementById("transInputCost")?.value) || 0;
+      const paidBy = document.getElementById("transInputPayer")?.value || "Dean";
+      const notes = document.getElementById("transInputNotes")?.value?.trim() || "";
 
       trip.transports.push({
-        id: "tr_" + Date.now(),
+        id: "trans_" + Date.now(),
         type,
         operator,
         pickupPlace,
@@ -4810,26 +5276,65 @@
         notes
       });
 
+      // Clear input fields
+      const opInput = document.getElementById("transInputOperator");
+      const pickInput = document.getElementById("transInputPickupPlace");
+      const dropInput = document.getElementById("transInputDropoffPlace");
+      const pickTime = document.getElementById("transInputPickupTime");
+      const dropTime = document.getElementById("transInputDropoffTime");
+      const refInput = document.getElementById("transInputRef");
+      const costInput = document.getElementById("transInputCost");
+      const notesInput = document.getElementById("transInputNotes");
+
+      if (opInput) opInput.value = "";
+      if (pickInput) pickInput.value = "";
+      if (dropInput) dropInput.value = "";
+      if (pickTime) pickTime.value = "";
+      if (dropTime) dropTime.value = "";
+      if (refInput) refInput.value = "";
+      if (costInput) costInput.value = "";
+      if (notesInput) notesInput.value = "";
+
       saveState();
       closeBottomSheet("sheetAddTransport");
       renderAllViews();
-      showToast(`Added transit booking: ${operator}`);
+      switchTripSubTab("transport");
+      showToast(`Added transit: ${operator}`);
     }
 
-    // ==================== CHECKLISTS & PACKING TAB ====================
-    function switchChecklistMode(mode) {
-      checklistMode = mode;
-      const btnPacking = document.getElementById("chkModeBtnPacking");
-      const btnTasks = document.getElementById("chkModeBtnTasks");
+    function handleSaveEditedTransport(e) {
+      e.preventDefault();
+      const trip = getActiveTrip();
+      if (!trip) return;
 
-      if (mode === "packing") {
-        btnPacking.className = "flex-1 py-1.5 rounded-xl bg-ios-surfaceHigh text-white shadow-xs transition";
-        btnTasks.className = "flex-1 py-1.5 rounded-xl transition text-ios-gray";
-      } else {
-        btnTasks.className = "flex-1 py-1.5 rounded-xl bg-ios-surfaceHigh text-white shadow-xs transition";
-        btnPacking.className = "flex-1 py-1.5 rounded-xl transition text-ios-gray";
-      }
-      renderChecklistsTab();
+      const transId = document.getElementById("editTransId")?.value;
+      const t = (trip.transports || []).find(item => item.id === transId);
+      if (!t) return;
+
+      t.type = document.getElementById("editTransType")?.value || "car";
+      t.operator = document.getElementById("editTransOperator")?.value?.trim() || "";
+      t.pickupPlace = document.getElementById("editTransPickupPlace")?.value?.trim() || "";
+      t.dropoffPlace = document.getElementById("editTransDropoffPlace")?.value?.trim() || "";
+      t.pickupTime = document.getElementById("editTransPickupTime")?.value || "";
+      t.dropoffTime = document.getElementById("editTransDropoffTime")?.value || "";
+      t.ref = document.getElementById("editTransRef")?.value?.trim() || "";
+      t.cost = parseFloat(document.getElementById("editTransCost")?.value) || 0;
+      t.paidBy = document.getElementById("editTransPayer")?.value || "Dean";
+      t.notes = document.getElementById("editTransNotes")?.value?.trim() || "";
+
+      saveState();
+      closeBottomSheet("sheetEditTransport");
+      renderAllViews();
+      showToast(`Updated transit: ${t.operator}`);
+    }
+
+    function removeTransport(id) {
+      const trip = getActiveTrip();
+      if (!trip) return;
+      trip.transports = (trip.transports || []).filter(t => t.id !== id);
+      saveState();
+      renderAllViews();
+      showToast("Transit removed.");
     }
 
     function renderChecklistsTab() {
@@ -4838,45 +5343,32 @@
       if (!container) return;
 
       const items = (trip.tasks || []).filter(t => t.category === checklistMode);
-
       if (items.length === 0) {
         container.innerHTML = `
           <div class="p-8 text-center text-ios-gray text-xs rounded-2xl bg-ios-surface border border-white/5 space-y-2">
-            <p>No ${checklistMode === 'packing' ? 'gear or luggage items' : 'pre-departure tasks'} added yet.</p>
-            <button onclick="openBottomSheet('sheetAddTask')" class="text-ios-teal underline font-medium">Add First Item</button>
+            <p>No ${checklistMode === 'packing' ? 'gear or packing' : 'pre-trip tasks'} recorded yet.</p>
+            <button onclick="openBottomSheet('sheetAddTask')" class="text-ios-teal underline font-medium">Add Item</button>
           </div>
         `;
         return;
       }
 
       container.innerHTML = items.map(item => `
-        <div class="p-3.5 rounded-2xl bg-ios-surface border border-white/5 flex items-center justify-between transition">
-          <div class="flex items-center space-x-3 cursor-pointer flex-1 min-w-0" onclick="toggleTaskCompleted('${item.id}')">
-            <div class="w-6 h-6 rounded-lg ${item.completed ? 'bg-ios-teal text-black' : 'border border-white/20 bg-ios-surfaceHigh'} flex items-center justify-center shrink-0 transition">
+        <div class="p-3.5 rounded-2xl bg-ios-surface border border-white/10 flex items-center justify-between">
+          <div class="flex items-center space-x-3 flex-1 min-w-0 cursor-pointer" onclick="toggleTaskCompleted('${item.id}')">
+            <div class="w-6 h-6 rounded-lg ${item.completed ? 'bg-ios-green text-black' : 'border border-white/20 bg-ios-surfaceHigh'} flex items-center justify-center transition shrink-0">
               ${item.completed ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}
             </div>
             <div class="truncate">
-              <span class="text-xs font-semibold ${item.completed ? 'line-through text-ios-gray' : 'text-white'} truncate block">${item.text}</span>
-              <span class="text-[10px] text-ios-gray">Assigned to: ${item.assignee || 'Both'}</span>
+              <span class="text-xs font-semibold ${item.completed ? 'line-through text-gray-500' : 'text-white'} block truncate">${item.text}</span>
+              <span class="text-[10px] text-ios-gray">${item.assignee || 'Both'}</span>
             </div>
           </div>
-          <button onclick="removeTask('${item.id}')" class="text-gray-500 hover:text-ios-red p-1">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-          </button>
+          <button onclick="removeTask('${item.id}')" class="text-xs text-ios-red hover:underline pl-3 shrink-0">Remove</button>
         </div>
       `).join("");
 
       lucide.createIcons();
-    }
-
-    function toggleTaskCompleted(id) {
-      const trip = getActiveTrip();
-      const task = (trip.tasks || []).find(t => t.id === id);
-      if (task) {
-        task.completed = !task.completed;
-        saveState();
-        renderChecklistsTab();
-      }
     }
 
     function removeTask(id) {
@@ -5192,6 +5684,8 @@
           title: item.title,
           city: cityToSave,
           category: "Tours & Excursions",
+          priority: "Must-Do",
+          isScheduled: true,
           date: document.getElementById("aiSearchSingleDate").value || trip.startDate,
           time: "10:00",
           cost: best.priceAud,
